@@ -93,6 +93,7 @@
                                 <ul class="nav nav-treeview">
                                     <li class="nav-item"><a class="nav-link" href="{{ route('campo.productores.index') }}"><p>Productores</p></a></li>
                                     <li class="nav-item"><a class="nav-link" href="{{ route('campo.lotes.index') }}"><p>Lotes de campo</p></a></li>
+                                    <li class="nav-item"><a class="nav-link" href="{{ route('campo.lecturas.index') }}"><p>Lecturas sensores</p></a></li>
                                 </ul>
                             </li>
                         </ul>

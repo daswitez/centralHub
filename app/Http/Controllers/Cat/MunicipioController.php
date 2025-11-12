@@ -8,6 +8,7 @@ use App\Models\Cat\Municipio;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Validation\Rule;
 
 /**
  * Controlador CRUD de Municipios (cat.municipio)
@@ -43,7 +44,7 @@ class MunicipioController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'departamento_id' => ['required', 'integer', 'exists:cat.departamento,departamento_id'],
+            'departamento_id' => ['required', 'integer', Rule::exists('departamento', 'departamento_id')],
             'nombre' => ['required', 'string', 'max:120'],
         ]);
 
@@ -64,7 +65,7 @@ class MunicipioController extends Controller
     {
         $municipio = Municipio::findOrFail($id);
         $validated = $request->validate([
-            'departamento_id' => ['required', 'integer', 'exists:cat.departamento,departamento_id'],
+            'departamento_id' => ['required', 'integer', Rule::exists('departamento', 'departamento_id')],
             'nombre' => ['required', 'string', 'max:120'],
         ]);
         $municipio->update($validated);

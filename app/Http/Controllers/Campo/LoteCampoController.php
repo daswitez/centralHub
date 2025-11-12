@@ -9,6 +9,7 @@ use App\Models\Cat\VariedadPapa;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Validation\Rule;
 
 class LoteCampoController extends Controller
 {
@@ -37,8 +38,8 @@ class LoteCampoController extends Controller
     {
         $validated = $request->validate([
             'codigo_lote_campo' => ['required', 'string', 'max:50'],
-            'productor_id' => ['required', 'integer', 'exists:campo.productor,productor_id'],
-            'variedad_id' => ['required', 'integer', 'exists:cat.variedadpapa,variedad_id'],
+            'productor_id' => ['required', 'integer', Rule::exists('productor', 'productor_id')],
+            'variedad_id' => ['required', 'integer', Rule::exists('variedadpapa', 'variedad_id')],
             'superficie_ha' => ['required', 'numeric'],
             'fecha_siembra' => ['required', 'date'],
             'fecha_cosecha' => ['nullable', 'date'],
@@ -61,8 +62,8 @@ class LoteCampoController extends Controller
         $lote = LoteCampo::findOrFail($id);
         $validated = $request->validate([
             'codigo_lote_campo' => ['required', 'string', 'max:50'],
-            'productor_id' => ['required', 'integer', 'exists:campo.productor,productor_id'],
-            'variedad_id' => ['required', 'integer', 'exists:cat.variedadpapa,variedad_id'],
+            'productor_id' => ['required', 'integer', Rule::exists('productor', 'productor_id')],
+            'variedad_id' => ['required', 'integer', Rule::exists('variedadpapa', 'variedad_id')],
             'superficie_ha' => ['required', 'numeric'],
             'fecha_siembra' => ['required', 'date'],
             'fecha_cosecha' => ['nullable', 'date'],

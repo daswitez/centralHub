@@ -8,6 +8,7 @@ use App\Models\Cat\Municipio;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Validation\Rule;
 
 class ClienteController extends Controller
 {
@@ -39,7 +40,7 @@ class ClienteController extends Controller
             'codigo_cliente' => ['required', 'string', 'max:40'],
             'nombre' => ['required', 'string', 'max:160'],
             'tipo' => ['required', 'string', 'max:60'],
-            'municipio_id' => ['nullable', 'integer', 'exists:cat.municipio,municipio_id'],
+            'municipio_id' => ['nullable', 'integer', Rule::exists('municipio', 'municipio_id')],
             'direccion' => ['nullable', 'string', 'max:200'],
             'lat' => ['nullable', 'numeric'],
             'lon' => ['nullable', 'numeric'],
@@ -62,7 +63,7 @@ class ClienteController extends Controller
             'codigo_cliente' => ['required', 'string', 'max:40'],
             'nombre' => ['required', 'string', 'max:160'],
             'tipo' => ['required', 'string', 'max:60'],
-            'municipio_id' => ['nullable', 'integer', 'exists:cat.municipio,municipio_id'],
+            'municipio_id' => ['nullable', 'integer', Rule::exists('municipio', 'municipio_id')],
             'direccion' => ['nullable', 'string', 'max:200'],
             'lat' => ['nullable', 'numeric'],
             'lon' => ['nullable', 'numeric'],

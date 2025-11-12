@@ -8,6 +8,7 @@ use App\Models\Cat\Municipio;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Validation\Rule;
 
 class AlmacenController extends Controller
 {
@@ -37,7 +38,7 @@ class AlmacenController extends Controller
         $validated = $request->validate([
             'codigo_almacen' => ['required', 'string', 'max:40'],
             'nombre' => ['required', 'string', 'max:140'],
-            'municipio_id' => ['required', 'integer', 'exists:cat.municipio,municipio_id'],
+            'municipio_id' => ['required', 'integer', Rule::exists('municipio', 'municipio_id')],
             'direccion' => ['nullable', 'string', 'max:200'],
             'lat' => ['nullable', 'numeric'],
             'lon' => ['nullable', 'numeric'],
@@ -59,7 +60,7 @@ class AlmacenController extends Controller
         $validated = $request->validate([
             'codigo_almacen' => ['required', 'string', 'max:40'],
             'nombre' => ['required', 'string', 'max:140'],
-            'municipio_id' => ['required', 'integer', 'exists:cat.municipio,municipio_id'],
+            'municipio_id' => ['required', 'integer', Rule::exists('municipio', 'municipio_id')],
             'direccion' => ['nullable', 'string', 'max:200'],
             'lat' => ['nullable', 'numeric'],
             'lon' => ['nullable', 'numeric'],

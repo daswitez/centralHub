@@ -8,6 +8,7 @@ use App\Models\Cat\Municipio;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Validation\Rule;
 
 class ProductorController extends Controller
 {
@@ -37,7 +38,7 @@ class ProductorController extends Controller
         $validated = $request->validate([
             'codigo_productor' => ['required', 'string', 'max:40'],
             'nombre' => ['required', 'string', 'max:140'],
-            'municipio_id' => ['required', 'integer', 'exists:cat.municipio,municipio_id'],
+            'municipio_id' => ['required', 'integer', Rule::exists('municipio', 'municipio_id')],
             'telefono' => ['nullable', 'string', 'max:40'],
         ]);
         Productor::create($validated);
@@ -57,7 +58,7 @@ class ProductorController extends Controller
         $validated = $request->validate([
             'codigo_productor' => ['required', 'string', 'max:40'],
             'nombre' => ['required', 'string', 'max:140'],
-            'municipio_id' => ['required', 'integer', 'exists:cat.municipio,municipio_id'],
+            'municipio_id' => ['required', 'integer', Rule::exists('municipio', 'municipio_id')],
             'telefono' => ['nullable', 'string', 'max:40'],
         ]);
         $productor->update($validated);

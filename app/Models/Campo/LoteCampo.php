@@ -5,6 +5,7 @@ namespace App\Models\Campo;
 use App\Models\Cat\VariedadPapa;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class LoteCampo extends Model
 {
@@ -29,6 +30,12 @@ class LoteCampo extends Model
     public function variedad(): BelongsTo
     {
         return $this->belongsTo(VariedadPapa::class, 'variedad_id', 'variedad_id');
+    }
+
+    /** Lecturas de sensores asociadas al lote */
+    public function lecturas(): HasMany
+    {
+        return $this->hasMany(SensorLectura::class, 'lote_campo_id', 'lote_campo_id');
     }
 }
 

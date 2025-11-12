@@ -10,6 +10,7 @@ use App\Http\Controllers\Cat\TransportistaController;
 use App\Http\Controllers\Cat\AlmacenController;
 use App\Http\Controllers\Campo\ProductorController;
 use App\Http\Controllers\Campo\LoteCampoController;
+use App\Http\Controllers\Campo\SensorLecturaController;
 use App\Http\Controllers\Panel\DashboardController;
 
 Route::get('/', function () {
@@ -31,6 +32,7 @@ Route::prefix('cat')->name('cat.')->group(function () {
 Route::prefix('campo')->name('campo.')->group(function () {
     Route::resource('productores', ProductorController::class)->except(['show']);
     Route::resource('lotes', LoteCampoController::class)->except(['show']);
+    Route::resource('lecturas', SensorLecturaController::class)->except(['show']);
 });
 
 // Paneles (dashboards)

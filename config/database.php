@@ -94,7 +94,9 @@ return [
             'charset' => env('DB_CHARSET', 'utf8'),
             'prefix' => '',
             'prefix_indexes' => true,
-            'search_path' => 'public',
+            // Permite múltiples esquemas en PostgreSQL, separados por coma.
+            // Defínelo en .env como: DB_SCHEMA="public,cat,campo,planta,logistica,comercial,certificacion,almacen"
+            'search_path' => env('DB_SCHEMA', 'public'),
             'sslmode' => 'prefer',
         ],
 
