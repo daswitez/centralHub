@@ -50,7 +50,7 @@
         <div class="col-lg-3 col-6">
             <div class="small-box bg-danger">
                 <div class="inner">
-                    <h3>Waych'a/Desirée</h3>
+                    <h3>Waych'a</h3>
                     <p>Variedades líderes</p>
                 </div>
                 <div class="icon"><i class="fas fa-seedling"></i></div>
