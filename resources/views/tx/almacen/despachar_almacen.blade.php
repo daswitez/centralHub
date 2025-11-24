@@ -2,20 +2,29 @@
 
 @section('page_title', 'Almacén — Despachar a almacén')
 
+@section('page_header')
+    <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between">
+        <div>
+            <h1 class="m-0 text-uppercase">Despachar a almacén</h1>
+            <p class="text-secondary mb-0 small">Registra un envío desde planta hacia un almacén destino</p>
+        </div>
+    </div>
+@endsection
+
 @section('content')
     <div class="row">
         <div class="col-12 col-lg-7">
             @include('components.alerts')
 
             {{-- Tarjeta para ejecutar almacen.sp_despachar_a_almacen --}}
-            <div class="card card-outline card-dark">
+            <div class="card card-outline card-dark shadow-sm">
                 <div class="card-header">
                     <h3 class="card-title">Despachar a almacén destino</h3>
                 </div>
                 <form method="post" action="{{ route('tx.almacen.despachar-al-almacen.store') }}">
                     @csrf
                     <div class="card-body">
-                        <h5 class="mb-3">Datos generales del envío</h5>
+                        <h5 class="mb-1 text-uppercase">Datos generales del envío</h5>
                         <div class="form-group">
                             <label for="codigo_envio">Código envío</label>
                             <input
@@ -70,10 +79,8 @@
                         <hr>
 
                         {{-- Detalle de lotes enviados al almacén --}}
-                        <h5 class="mb-3">Detalle de lotes enviados</h5>
-                        <p class="text-muted">
-                            Cada fila representa la cantidad de un lote de salida enviada al almacén destino.
-                        </p>
+                        <h5 class="mb-1 text-uppercase">Detalle de lotes enviados</h5>
+                        <p class="text-muted small mb-2">Cada fila representa la cantidad de un lote de salida enviada al almacén destino.</p>
 
                         <div class="table-responsive">
                             <table class="table table-sm table-bordered mb-0" id="tabla-detalle-almacen">

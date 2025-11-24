@@ -2,23 +2,25 @@
 
 @section('page_title', 'Planta — Producción')
 
-@section('content')
-    <div class="row">
-        <div class="col-sm-7">
-            <h3 class="mb-0">Planta — Producción</h3>
-            <p class="text-secondary mb-0">Líneas: Lavado/Pelado · Corte · Escaldado · Fritura · Enfriado · Empaque</p>
+@section('page_header')
+    <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between">
+        <div>
+            <h1 class="m-0 text-uppercase">Planta</h1>
+            <p class="text-secondary mb-0 small">Producción · Lavado · Corte · Escaldado · Fritura · Enfriado · Empaque</p>
         </div>
-        <div class="col-sm-5">
-            <ol class="breadcrumb float-sm-right">
-                <li class="breadcrumb-item"><a href="{{ route('panel.home') }}">Inicio</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Planta</li>
-            </ol>
-        </div>
+        <ol class="breadcrumb float-sm-right bg-transparent mb-0 p-0">
+            <li class="breadcrumb-item"><a href="{{ route('panel.home') }}">Inicio</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Planta</li>
+        </ol>
     </div>
+@endsection
 
-    <div class="card">
+@section('content')
+    <div class="card card-outline card-dark">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h3 class="card-title mb-0">Batches recientes</h3>
+            <h3 class="card-title mb-0">
+                <i class="fas fa-industry mr-2"></i>Batches recientes
+            </h3>
             <a href="{{ route('cat.plantas.index') }}" class="btn btn-sm btn-outline-dark">Plantas</a>
         </div>
         <div class="card-body p-0">

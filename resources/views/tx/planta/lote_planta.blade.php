@@ -2,13 +2,22 @@
 
 @section('page_title', 'Registrar lote de planta')
 
+@section('page_header')
+    <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between">
+        <div>
+            <h1 class="m-0 text-uppercase">Nuevo lote de planta</h1>
+            <p class="text-secondary mb-0 small">Registra un batch de producción y sus entradas de campo</p>
+        </div>
+    </div>
+@endsection
+
 @section('content')
     <div class="row">
         <div class="col-12 col-lg-7">
             @include('components.alerts')
 
             {{-- Tarjeta principal para registrar un nuevo lote de planta usando la función planta.sp_registrar_lote_planta --}}
-            <div class="card card-outline card-dark">
+            <div class="card card-outline card-dark shadow-sm">
                 <div class="card-header">
                     <h3 class="card-title">Registrar lote de planta</h3>
                 </div>
@@ -53,10 +62,8 @@
                         <hr>
 
                         {{-- Tabla de entradas de campo (JSONB en la función) --}}
-                        <h5 class="mb-3">Entradas de campo</h5>
-                        <p class="text-muted">
-                            Cada fila representa una entrada desde un lote de campo con su peso en toneladas.
-                        </p>
+                        <h5 class="mb-1 text-uppercase">Entradas de campo</h5>
+                        <p class="text-muted small mb-2">Cada fila representa una entrada desde un lote de campo con su peso en toneladas.</p>
 
                         <div class="table-responsive">
                             <table class="table table-sm table-bordered mb-0" id="tabla-entradas">

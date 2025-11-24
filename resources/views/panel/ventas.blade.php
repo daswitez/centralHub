@@ -2,17 +2,20 @@
 
 @section('page_title', 'Ventas — Panel Comercial')
 
-@section('content')
-    <div class="row">
-        <div class="col-sm-6"><h3 class="mb-0">Ventas — Panel Comercial</h3><p class="text-secondary mb-0">Pedidos, ingresos, canales y márgenes</p></div>
-        <div class="col-sm-6">
-            <ol class="breadcrumb float-sm-right">
-                <li class="breadcrumb-item"><a href="{{ route('panel.home') }}">Inicio</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Ventas</li>
-            </ol>
+@section('page_header')
+    <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between">
+        <div>
+            <h1 class="m-0 text-uppercase">Ventas</h1>
+            <p class="text-secondary mb-0 small">Pedidos, ingresos, canales y márgenes</p>
         </div>
+        <ol class="breadcrumb float-sm-right bg-transparent mb-0 p-0">
+            <li class="breadcrumb-item"><a href="{{ route('panel.home') }}">Inicio</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Ventas</li>
+        </ol>
     </div>
+@endsection
 
+@section('content')
     <div class="row">
         <div class="col-12 col-sm-6 col-md-3">
             <div class="info-box">

@@ -2,13 +2,22 @@
 
 @section('page_title', 'Almacén — Recepcionar envío')
 
+@section('page_header')
+    <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between">
+        <div>
+            <h1 class="m-0 text-uppercase">Recepcionar envío</h1>
+            <p class="text-secondary mb-0 small">Confirma la llegada del envío y actualiza inventario</p>
+        </div>
+    </div>
+@endsection
+
 @section('content')
     <div class="row">
         <div class="col-12 col-md-6">
             @include('components.alerts')
 
             {{-- Tarjeta para ejecutar almacen.sp_recepcionar_envio --}}
-            <div class="card card-outline card-dark">
+            <div class="card card-outline card-dark shadow-sm">
                 <div class="card-header">
                     <h3 class="card-title">Recepcionar envío en almacén</h3>
                 </div>

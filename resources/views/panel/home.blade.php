@@ -2,20 +2,20 @@
 
 @section('page_title', 'Producción de Papa — Bolivia')
 
-@section('content')
-    <div class="row">
-        <div class="col-sm-6">
-            <h3 class="mb-1">Producción de Papa — Bolivia</h3>
-            <p class="text-secondary mb-3">Siembra → campo → planta → distribución</p>
+@section('page_header')
+    <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between">
+        <div>
+            <h1 class="m-0 text-uppercase">Producción de Papa — Bolivia</h1>
+            <p class="text-secondary mb-0 small">Siembra → campo → planta → distribución</p>
         </div>
-        <div class="col-sm-6">
-            <ol class="breadcrumb float-sm-right">
-                <li class="breadcrumb-item"><a href="{{ route('panel.home') }}">Inicio</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Producción</li>
-            </ol>
-        </div>
+        <ol class="breadcrumb float-sm-right bg-transparent mb-0 p-0">
+            <li class="breadcrumb-item"><a href="{{ route('panel.home') }}">Inicio</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Producción</li>
+        </ol>
     </div>
+@endsection
 
+@section('content')
     <div class="row">
         <div class="col-lg-3 col-6">
             <div class="small-box bg-primary">

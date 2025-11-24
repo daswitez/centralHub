@@ -2,20 +2,25 @@
 
 @section('page_title', 'Logística — Envíos & Trazabilidad')
 
-@section('content')
-    <div class="row">
-        <div class="col-sm-6"><h3 class="mb-0">Logística — Envíos & Trazabilidad</h3><p class="text-secondary mb-0">Planta → Almacén/Cliente</p></div>
-        <div class="col-sm-6">
-            <ol class="breadcrumb float-sm-right">
-                <li class="breadcrumb-item"><a href="{{ route('panel.home') }}">Inicio</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Logística</li>
-            </ol>
+@section('page_header')
+    <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between">
+        <div>
+            <h1 class="m-0 text-uppercase">Logística</h1>
+            <p class="text-secondary mb-0 small">Envíos · Planta → Almacén / Cliente · Trazabilidad en frío</p>
         </div>
+        <ol class="breadcrumb float-sm-right bg-transparent mb-0 p-0">
+            <li class="breadcrumb-item"><a href="{{ route('panel.home') }}">Inicio</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Logística</li>
+        </ol>
     </div>
+@endsection
 
-    <div class="card">
+@section('content')
+    <div class="card card-outline card-dark">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h3 class="card-title mb-0">Últimos envíos</h3>
+            <h3 class="card-title mb-0">
+                <i class="fas fa-route mr-2"></i>Últimos envíos
+            </h3>
             <a href="{{ route('cat.transportistas.index') }}" class="btn btn-sm btn-outline-dark">Transportistas</a>
         </div>
         <div class="card-body p-0">

@@ -2,13 +2,22 @@
 
 @section('page_title', 'Lote de salida y envío')
 
+@section('page_header')
+    <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between">
+        <div>
+            <h1 class="m-0 text-uppercase">Lote de salida / Envío</h1>
+            <p class="text-secondary mb-0 small">Empaque del lote y opción de crear un envío logístico</p>
+        </div>
+    </div>
+@endsection
+
 @section('content')
     <div class="row">
         <div class="col-12 col-lg-7">
             @include('components.alerts')
 
             {{-- Tarjeta para registrar lote de salida y opcionalmente un envío --}}
-            <div class="card card-outline card-dark">
+            <div class="card card-outline card-dark shadow-sm">
                 <div class="card-header">
                     <h3 class="card-title">Registrar lote de salida / envío</h3>
                 </div>

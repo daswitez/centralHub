@@ -2,20 +2,29 @@
 
 @section('page_title', 'Almacén — Despachar a cliente')
 
+@section('page_header')
+    <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between">
+        <div>
+            <h1 class="m-0 text-uppercase">Despachar a cliente</h1>
+            <p class="text-secondary mb-0 small">Genera un envío desde almacén hacia el cliente</p>
+        </div>
+    </div>
+@endsection
+
 @section('content')
     <div class="row">
         <div class="col-12 col-lg-7">
             @include('components.alerts')
 
             {{-- Tarjeta para ejecutar almacen.sp_despachar_a_cliente --}}
-            <div class="card card-outline card-dark">
+            <div class="card card-outline card-dark shadow-sm">
                 <div class="card-header">
                     <h3 class="card-title">Despachar desde almacén a cliente</h3>
                 </div>
                 <form method="post" action="{{ route('tx.almacen.despachar-al-cliente.store') }}">
                     @csrf
                     <div class="card-body">
-                        <h5 class="mb-3">Datos generales del envío</h5>
+                        <h5 class="mb-1 text-uppercase">Datos generales del envío</h5>
                         <div class="form-group">
                             <label for="codigo_envio">Código envío</label>
                             <input
@@ -84,10 +93,8 @@
                         <hr>
 
                         {{-- Detalle de lotes enviados al cliente --}}
-                        <h5 class="mb-3">Detalle de lotes enviados al cliente</h5>
-                        <p class="text-muted">
-                            Cada fila representa la cantidad de un lote de salida que se despacha al cliente.
-                        </p>
+                        <h5 class="mb-1 text-uppercase">Detalle de lotes enviados al cliente</h5>
+                        <p class="text-muted small mb-2">Cada fila representa la cantidad de un lote de salida que se despacha al cliente.</p>
 
                         <div class="table-responsive">
                             <table class="table table-sm table-bordered mb-0" id="tabla-detalle-cliente">

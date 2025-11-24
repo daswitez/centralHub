@@ -136,12 +136,16 @@
 
             {{-- Área principal de contenido --}}
             <div class="content-wrapper">
-                {{-- Cabecera de página opcional --}}
+                {{-- Cabecera de página opcional: usa page_header si existe, si no sólo page_title simple --}}
                 <section class="content-header">
                     <div class="container-fluid">
                         <div class="row mb-2">
                             <div class="col-sm-6">
-                                <h1 class="m-0">@yield('page_title', 'Dashboard')</h1>
+                                @hasSection('page_header')
+                                    @yield('page_header')
+                                @else
+                                    <h1 class="m-0">@yield('page_title', 'Dashboard')</h1>
+                                @endif
                             </div>
                         </div>
                     </div>
