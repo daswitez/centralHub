@@ -11,6 +11,8 @@ use App\Http\Controllers\Cat\AlmacenController;
 use App\Http\Controllers\Campo\ProductorController;
 use App\Http\Controllers\Campo\LoteCampoController;
 use App\Http\Controllers\Campo\SensorLecturaController;
+use App\Http\Controllers\Planta\TransaccionPlantaController;
+use App\Http\Controllers\Almacen\TransaccionAlmacenController;
 use App\Http\Controllers\Panel\DashboardController;
 
 Route::get('/', function () {
@@ -42,4 +44,38 @@ Route::prefix('panel')->name('panel.')->group(function () {
     Route::get('/logistica', [DashboardController::class, 'logistica'])->name('logistica');
     Route::get('/planta', [DashboardController::class, 'planta'])->name('planta');
     Route::get('/certificaciones', [DashboardController::class, 'certificaciones'])->name('certificaciones');
+});
+
+// Transacciones de negocio (SPs en PostgreSQL)
+Route::prefix('tx')->name('tx.')->group(function () {
+    // Planta
+    Route::prefix('planta')->name('planta.')->group(function () {
+        Route::get('lote-planta', [TransaccionPlantaController::class, 'showLotePlantaForm'])
+            ->name('lote-planta.form');
+        Route::post('lote-planta', [TransaccionPlantaController::class, 'registrarLotePlanta'])
+            ->name('lote-planta.store');
+
+        Route::get('lote-salida-envio', [TransaccionPlantaController::class, 'showLoteSalidaEnvioForm'])
+            ->name('lote-salida-envio.form');
+        Route::post('lote-salida-envio', [TransaccionPlantaController::class, 'registrarLoteSalidaEnvio'])
+            ->name('lote-salida-envio.store');
+    });
+
+    // Almacén
+    Route::prefix('almacen')->name('almacen.')->group(function () {
+        Route::get('despachar-al-almacen', [TransaccionAlmacenController::class, 'showDespacharAlmacenForm'])
+            ->name('despachar-al-almacen.form');
+        Route::post('despachar-al-almacen', [TransaccionAlmacenController::class, 'despacharAlmacen'])
+            ->name('despachar-al-almacen.store');
+
+        Route::get('recepcionar-envio', [TransaccionAlmacenController::class, 'showRecepcionarEnvioForm'])
+            ->name('recepcionar-envio.form');
+        Route::post('recepcionar-envio', [TransaccionAlmacenController::class, 'recepcionarEnvio'])
+            ->name('recepcionar-envio.store');
+
+        Route::get('despachar-al-cliente', [TransaccionAlmacenController::class, 'showDespacharClienteForm'])
+            ->name('despachar-al-cliente.form');
+        Route::post('despachar-al-cliente', [TransaccionAlmacenController::class, 'despacharCliente'])
+            ->name('despachar-al-cliente.store');
+    });
 });

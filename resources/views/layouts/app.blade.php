@@ -96,6 +96,39 @@
                                     <li class="nav-item"><a class="nav-link" href="{{ route('campo.lecturas.index') }}"><p>Lecturas sensores</p></a></li>
                                 </ul>
                             </li>
+                            <li class="nav-item has-treeview">
+                                <a href="#" class="nav-link">
+                                    <i class="nav-icon fas fa-exchange-alt"></i>
+                                    <p>Transacciones <i class="right fas fa-angle-left"></i></p>
+                                </a>
+                                <ul class="nav nav-treeview">
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{{ route('tx.planta.lote-planta.form') }}">
+                                            <p>Planta - Registrar lote planta</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{{ route('tx.planta.lote-salida-envio.form') }}">
+                                            <p>Planta - Lote salida / envío</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{{ route('tx.almacen.despachar-al-almacen.form') }}">
+                                            <p>Almacén - Despachar a almacén</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{{ route('tx.almacen.recepcionar-envio.form') }}">
+                                            <p>Almacén - Recepcionar envío</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{{ route('tx.almacen.despachar-al-cliente.form') }}">
+                                            <p>Almacén - Despachar a cliente</p>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
                         </ul>
                     </nav>
                 </div>
