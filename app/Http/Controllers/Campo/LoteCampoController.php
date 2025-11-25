@@ -3,82 +3,84 @@
 namespace App\Http\Controllers\Campo;
 
 use App\Http\Controllers\Controller;
-use App\Models\Campo\LoteCampo;
-use App\Models\Campo\Productor;
-use App\Models\Cat\VariedadPapa;
+
+use App\Models\Campo\Lotecampo;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use App\Http\Requests\Campo\LotecampoRequest;
+use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
-use Illuminate\Validation\Rule;
 
-class LoteCampoController extends Controller
+class LotecampoController extends Controller
 {
+    /**
+     * Display a listing of the resource.
+     */
     public function index(Request $request): View
     {
-        $q = trim((string) $request->get('q', ''));
-        $items = LoteCampo::query()
-            ->when($q !== '', function ($b) use ($q) {
-                $b->where('codigo_lote_campo', 'ilike', "%{$q}%");
-            })
-            ->orderBy('lote_campo_id', 'asc')
-            ->paginate(12)
-            ->appends(['q' => $q]);
+        $lotecampos = Lotecampo::paginate();
 
-        return view('campo.lotes.index', ['lotes' => $items, 'q' => $q]);
+        return view('campo.lotecampo.index', compact('lotecampos'))
+            ->with('i', ($request->input('page', 1) - 1) * $lotecampos->perPage());
     }
 
+    /**
+     * Show the form for creating a new resource.
+     */
     public function create(): View
     {
-        $productores = Productor::orderBy('nombre')->get();
-        $variedades = VariedadPapa::orderBy('nombre_comercial')->get();
-        return view('campo.lotes.create', compact('productores', 'variedades'));
+        $lotecampo = new Lotecampo();
+
+        return view('campo.lotecampo.create', compact('lotecampo'));
     }
 
-    public function store(Request $request): RedirectResponse
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(LotecampoRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'codigo_lote_campo' => ['required', 'string', 'max:50'],
-            'productor_id' => ['required', 'integer', Rule::exists('productor', 'productor_id')],
-            'variedad_id' => ['required', 'integer', Rule::exists('variedadpapa', 'variedad_id')],
-            'superficie_ha' => ['required', 'numeric'],
-            'fecha_siembra' => ['required', 'date'],
-            'fecha_cosecha' => ['nullable', 'date'],
-            'humedad_suelo_pct' => ['nullable', 'numeric'],
-        ]);
-        LoteCampo::create($validated);
-        return redirect()->route('campo.lotes.index')->with('status', 'Lote de campo creado.');
+        Lotecampo::create($request->validated());
+
+        return Redirect::route('campo.lotecampos.index')
+            ->with('success', 'Lotecampo created successfully.');
     }
 
-    public function edit(int $id): View
+    /**
+     * Display the specified resource.
+     */
+    public function show($id): View
     {
-        $lote = LoteCampo::findOrFail($id);
-        $productores = Productor::orderBy('nombre')->get();
-        $variedades = VariedadPapa::orderBy('nombre_comercial')->get();
-        return view('campo.lotes.edit', compact('lote', 'productores', 'variedades'));
+        $lotecampo = Lotecampo::find($id);
+
+        return view('campo.lotecampo.show', compact('lotecampo'));
     }
 
-    public function update(Request $request, int $id): RedirectResponse
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit($id): View
     {
-        $lote = LoteCampo::findOrFail($id);
-        $validated = $request->validate([
-            'codigo_lote_campo' => ['required', 'string', 'max:50'],
-            'productor_id' => ['required', 'integer', Rule::exists('productor', 'productor_id')],
-            'variedad_id' => ['required', 'integer', Rule::exists('variedadpapa', 'variedad_id')],
-            'superficie_ha' => ['required', 'numeric'],
-            'fecha_siembra' => ['required', 'date'],
-            'fecha_cosecha' => ['nullable', 'date'],
-            'humedad_suelo_pct' => ['nullable', 'numeric'],
-        ]);
-        $lote->update($validated);
-        return redirect()->route('campo.lotes.index')->with('status', 'Lote de campo actualizado.');
+        $lotecampo = Lotecampo::find($id);
+
+        return view('campo.lotecampo.edit', compact('lotecampo'));
     }
 
-    public function destroy(int $id): RedirectResponse
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(LotecampoRequest $request, Lotecampo $lotecampo): RedirectResponse
     {
-        $lote = LoteCampo::findOrFail($id);
-        $lote->delete();
-        return redirect()->route('campo.lotes.index')->with('status', 'Lote de campo eliminado.');
+        $lotecampo->update($request->validated());
+
+        return Redirect::route('campo.lotecampos.index')
+            ->with('success', 'Lotecampo updated successfully');
+    }
+
+    public function destroy($id): RedirectResponse
+    {
+        Lotecampo::find($id)->delete();
+
+        return Redirect::route('campo.lotecampos.index')
+            ->with('success', 'Lotecampo deleted successfully');
     }
 }
-
-

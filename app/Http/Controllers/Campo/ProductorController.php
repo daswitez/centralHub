@@ -3,74 +3,84 @@
 namespace App\Http\Controllers\Campo;
 
 use App\Http\Controllers\Controller;
+
 use App\Models\Campo\Productor;
-use App\Models\Cat\Municipio;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use App\Http\Requests\Campo\ProductorRequest;
+use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
-use Illuminate\Validation\Rule;
 
 class ProductorController extends Controller
 {
+    /**
+     * Display a listing of the resource.
+     */
     public function index(Request $request): View
     {
-        $q = trim((string) $request->get('q', ''));
-        $items = Productor::query()
-            ->when($q !== '', function ($b) use ($q) {
-                $b->where('codigo_productor', 'ilike', "%{$q}%")
-                    ->orWhere('nombre', 'ilike', "%{$q}%");
-            })
-            ->orderBy('productor_id', 'asc')
-            ->paginate(12)
-            ->appends(['q' => $q]);
+        $productors = Productor::paginate();
 
-        return view('campo.productores.index', ['productores' => $items, 'q' => $q]);
+        return view('campo.productor.index', compact('productors'))
+            ->with('i', ($request->input('page', 1) - 1) * $productors->perPage());
     }
 
+    /**
+     * Show the form for creating a new resource.
+     */
     public function create(): View
     {
-        $municipios = Municipio::orderBy('nombre')->get();
-        return view('campo.productores.create', compact('municipios'));
+        $productor = new Productor();
+
+        return view('campo.productor.create', compact('productor'));
     }
 
-    public function store(Request $request): RedirectResponse
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(ProductorRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'codigo_productor' => ['required', 'string', 'max:40'],
-            'nombre' => ['required', 'string', 'max:140'],
-            'municipio_id' => ['required', 'integer', Rule::exists('municipio', 'municipio_id')],
-            'telefono' => ['nullable', 'string', 'max:40'],
-        ]);
-        Productor::create($validated);
-        return redirect()->route('campo.productores.index')->with('status', 'Productor creado.');
+        Productor::create($request->validated());
+
+        return Redirect::route('campo.productors.index')
+            ->with('success', 'Productor created successfully.');
     }
 
-    public function edit(int $id): View
+    /**
+     * Display the specified resource.
+     */
+    public function show($id): View
     {
-        $productor = Productor::findOrFail($id);
-        $municipios = Municipio::orderBy('nombre')->get();
-        return view('campo.productores.edit', compact('productor', 'municipios'));
+        $productor = Productor::find($id);
+
+        return view('campo.productor.show', compact('productor'));
     }
 
-    public function update(Request $request, int $id): RedirectResponse
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit($id): View
     {
-        $productor = Productor::findOrFail($id);
-        $validated = $request->validate([
-            'codigo_productor' => ['required', 'string', 'max:40'],
-            'nombre' => ['required', 'string', 'max:140'],
-            'municipio_id' => ['required', 'integer', Rule::exists('municipio', 'municipio_id')],
-            'telefono' => ['nullable', 'string', 'max:40'],
-        ]);
-        $productor->update($validated);
-        return redirect()->route('campo.productores.index')->with('status', 'Productor actualizado.');
+        $productor = Productor::find($id);
+
+        return view('campo.productor.edit', compact('productor'));
     }
 
-    public function destroy(int $id): RedirectResponse
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(ProductorRequest $request, Productor $productor): RedirectResponse
     {
-        $productor = Productor::findOrFail($id);
-        $productor->delete();
-        return redirect()->route('campo.productores.index')->with('status', 'Productor eliminado.');
+        $productor->update($request->validated());
+
+        return Redirect::route('campo.productors.index')
+            ->with('success', 'Productor updated successfully');
+    }
+
+    public function destroy($id): RedirectResponse
+    {
+        Productor::find($id)->delete();
+
+        return Redirect::route('campo.productors.index')
+            ->with('success', 'Productor deleted successfully');
     }
 }
-
-

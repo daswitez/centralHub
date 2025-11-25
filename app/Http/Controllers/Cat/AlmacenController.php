@@ -3,78 +3,84 @@
 namespace App\Http\Controllers\Cat;
 
 use App\Http\Controllers\Controller;
+
 use App\Models\Cat\Almacen;
-use App\Models\Cat\Municipio;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use App\Http\Requests\Cat\AlmacenRequest;
+use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
-use Illuminate\Validation\Rule;
 
 class AlmacenController extends Controller
 {
+    /**
+     * Display a listing of the resource.
+     */
     public function index(Request $request): View
     {
-        $q = trim((string) $request->get('q', ''));
-        $items = Almacen::query()
-            ->when($q !== '', function ($b) use ($q) {
-                $b->where('codigo_almacen', 'ilike', "%{$q}%")
-                    ->orWhere('nombre', 'ilike', "%{$q}%");
-            })
-            ->orderBy('almacen_id', 'asc')
-            ->paginate(12)
-            ->appends(['q' => $q]);
+        $almacens = Almacen::paginate();
 
-        return view('cat.almacenes.index', ['almacenes' => $items, 'q' => $q]);
+        return view('cat.almacen.index', compact('almacens'))
+            ->with('i', ($request->input('page', 1) - 1) * $almacens->perPage());
     }
 
+    /**
+     * Show the form for creating a new resource.
+     */
     public function create(): View
     {
-        $municipios = Municipio::orderBy('nombre')->get();
-        return view('cat.almacenes.create', compact('municipios'));
+        $almacen = new Almacen();
+
+        return view('cat.almacen.create', compact('almacen'));
     }
 
-    public function store(Request $request): RedirectResponse
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(AlmacenRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'codigo_almacen' => ['required', 'string', 'max:40'],
-            'nombre' => ['required', 'string', 'max:140'],
-            'municipio_id' => ['required', 'integer', Rule::exists('municipio', 'municipio_id')],
-            'direccion' => ['nullable', 'string', 'max:200'],
-            'lat' => ['nullable', 'numeric'],
-            'lon' => ['nullable', 'numeric'],
-        ]);
-        Almacen::create($validated);
-        return redirect()->route('cat.almacenes.index')->with('status', 'Almacén creado.');
+        Almacen::create($request->validated());
+
+        return Redirect::route('cat.almacens.index')
+            ->with('success', 'Almacen created successfully.');
     }
 
-    public function edit(int $id): View
+    /**
+     * Display the specified resource.
+     */
+    public function show($id): View
     {
-        $almacen = Almacen::findOrFail($id);
-        $municipios = Municipio::orderBy('nombre')->get();
-        return view('cat.almacenes.edit', compact('almacen', 'municipios'));
+        $almacen = Almacen::find($id);
+
+        return view('cat.almacen.show', compact('almacen'));
     }
 
-    public function update(Request $request, int $id): RedirectResponse
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit($id): View
     {
-        $almacen = Almacen::findOrFail($id);
-        $validated = $request->validate([
-            'codigo_almacen' => ['required', 'string', 'max:40'],
-            'nombre' => ['required', 'string', 'max:140'],
-            'municipio_id' => ['required', 'integer', Rule::exists('municipio', 'municipio_id')],
-            'direccion' => ['nullable', 'string', 'max:200'],
-            'lat' => ['nullable', 'numeric'],
-            'lon' => ['nullable', 'numeric'],
-        ]);
-        $almacen->update($validated);
-        return redirect()->route('cat.almacenes.index')->with('status', 'Almacén actualizado.');
+        $almacen = Almacen::find($id);
+
+        return view('cat.almacen.edit', compact('almacen'));
     }
 
-    public function destroy(int $id): RedirectResponse
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(AlmacenRequest $request, Almacen $almacen): RedirectResponse
     {
-        $almacen = Almacen::findOrFail($id);
-        $almacen->delete();
-        return redirect()->route('cat.almacenes.index')->with('status', 'Almacén eliminado.');
+        $almacen->update($request->validated());
+
+        return Redirect::route('cat.almacens.index')
+            ->with('success', 'Almacen updated successfully');
+    }
+
+    public function destroy($id): RedirectResponse
+    {
+        Almacen::find($id)->delete();
+
+        return Redirect::route('cat.almacens.index')
+            ->with('success', 'Almacen deleted successfully');
     }
 }
-
-

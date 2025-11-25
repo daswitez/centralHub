@@ -1,6 +1,9 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Panel\DashboardController;
+
+// Cat
 use App\Http\Controllers\Cat\DepartamentoController;
 use App\Http\Controllers\Cat\MunicipioController;
 use App\Http\Controllers\Cat\VariedadPapaController;
@@ -8,12 +11,48 @@ use App\Http\Controllers\Cat\PlantaController;
 use App\Http\Controllers\Cat\ClienteController;
 use App\Http\Controllers\Cat\TransportistaController;
 use App\Http\Controllers\Cat\AlmacenController;
+
+// Campo
 use App\Http\Controllers\Campo\ProductorController;
 use App\Http\Controllers\Campo\LoteCampoController;
 use App\Http\Controllers\Campo\SensorLecturaController;
+
+// Planta
+use App\Http\Controllers\Planta\LotePlantaController;
+use App\Http\Controllers\Planta\LotePlantaEntradaCampoController;
+use App\Http\Controllers\Planta\ControlProcesoController;
+use App\Http\Controllers\Planta\LoteSalidaController;
+
+// Logistica
+use App\Http\Controllers\Logistica\RutaController;
+use App\Http\Controllers\Logistica\RutaPuntoController;
+use App\Http\Controllers\Logistica\EnvioController;
+use App\Http\Controllers\Logistica\EnvioDetalleController;
+use App\Http\Controllers\Logistica\EnvioDetalleAlmacenController;
+
+// Comercial
+use App\Http\Controllers\Comercial\PedidoController as ComercialPedidoController;
+use App\Http\Controllers\Comercial\PedidoDetalleController as ComercialPedidoDetalleController;
+
+// Certificacion
+use App\Http\Controllers\Certificacion\CertificadoController;
+use App\Http\Controllers\Certificacion\CertificadoLoteCampoController;
+use App\Http\Controllers\Certificacion\CertificadoLotePlantaController;
+use App\Http\Controllers\Certificacion\CertificadoLoteSalidaController;
+use App\Http\Controllers\Certificacion\CertificadoEnvioController;
+use App\Http\Controllers\Certificacion\CertificadoEvidenciaController;
+use App\Http\Controllers\Certificacion\CertificadoCadenaController;
+
+// Almacen
+use App\Http\Controllers\Almacen\PedidoController as AlmacenPedidoController;
+use App\Http\Controllers\Almacen\PedidoDetalleController as AlmacenPedidoDetalleController;
+use App\Http\Controllers\Almacen\RecepcionController;
+use App\Http\Controllers\Almacen\InventarioController;
+use App\Http\Controllers\Almacen\MovimientoController;
+
+// Tx
 use App\Http\Controllers\Planta\TransaccionPlantaController;
 use App\Http\Controllers\Almacen\TransaccionAlmacenController;
-use App\Http\Controllers\Panel\DashboardController;
 
 Route::get('/', function () {
     return redirect()->route('panel.home');
@@ -21,20 +60,63 @@ Route::get('/', function () {
 
 // Rutas CRUD para catálogos base (prefijo /cat)
 Route::prefix('cat')->name('cat.')->group(function () {
-    Route::resource('departamentos', DepartamentoController::class)->except(['show']);
-    Route::resource('municipios', MunicipioController::class)->except(['show']);
-    Route::resource('variedades', VariedadPapaController::class)->except(['show']);
-    Route::resource('plantas', PlantaController::class)->except(['show']);
-    Route::resource('clientes', ClienteController::class)->except(['show']);
-    Route::resource('transportistas', TransportistaController::class)->except(['show']);
-    Route::resource('almacenes', AlmacenController::class)->except(['show']);
+    Route::resource('departamentos', DepartamentoController::class);
+    Route::resource('municipios', MunicipioController::class);
+    Route::resource('variedades', VariedadPapaController::class);
+    Route::resource('plantas', PlantaController::class);
+    Route::resource('clientes', ClienteController::class);
+    Route::resource('transportistas', TransportistaController::class);
+    Route::resource('almacenes', AlmacenController::class);
 });
 
 // Rutas CRUD para campo (prefijo /campo)
 Route::prefix('campo')->name('campo.')->group(function () {
-    Route::resource('productores', ProductorController::class)->except(['show']);
-    Route::resource('lotes', LoteCampoController::class)->except(['show']);
-    Route::resource('lecturas', SensorLecturaController::class)->except(['show']);
+    Route::resource('productores', ProductorController::class);
+    Route::resource('lotes', LoteCampoController::class);
+    Route::resource('lecturas', SensorLecturaController::class);
+});
+
+// Rutas CRUD para planta (prefijo /planta)
+Route::prefix('planta')->name('planta.')->group(function () {
+    Route::resource('loteplantas', LotePlantaController::class);
+    Route::resource('entradas-campo', LotePlantaEntradaCampoController::class);
+    Route::resource('controles', ControlProcesoController::class);
+    Route::resource('lotesalidas', LoteSalidaController::class);
+});
+
+// Rutas CRUD para logistica (prefijo /logistica)
+Route::prefix('logistica')->name('logistica.')->group(function () {
+    Route::resource('rutas', RutaController::class);
+    Route::resource('puntos', RutaPuntoController::class);
+    Route::resource('envios', EnvioController::class);
+    Route::resource('enviodetalles', EnvioDetalleController::class);
+    Route::resource('enviodetallesalmacen', EnvioDetalleAlmacenController::class);
+});
+
+// Rutas CRUD para comercial (prefijo /comercial)
+Route::prefix('comercial')->name('comercial.')->group(function () {
+    Route::resource('pedidos', ComercialPedidoController::class);
+    Route::resource('detalles', ComercialPedidoDetalleController::class);
+});
+
+// Rutas CRUD para certificacion (prefijo /certificacion)
+Route::prefix('certificacion')->name('certificacion.')->group(function () {
+    Route::resource('certificados', CertificadoController::class);
+    Route::resource('lotescampo', CertificadoLoteCampoController::class);
+    Route::resource('lotesplanta', CertificadoLotePlantaController::class);
+    Route::resource('lotessalida', CertificadoLoteSalidaController::class);
+    Route::resource('envios', CertificadoEnvioController::class);
+    Route::resource('evidencias', CertificadoEvidenciaController::class);
+    Route::resource('cadenas', CertificadoCadenaController::class);
+});
+
+// Rutas CRUD para almacen (prefijo /almacen)
+Route::prefix('almacen')->name('almacen.')->group(function () {
+    Route::resource('pedidos', AlmacenPedidoController::class);
+    Route::resource('detalles', AlmacenPedidoDetalleController::class);
+    Route::resource('recepciones', RecepcionController::class);
+    Route::resource('inventarios', InventarioController::class);
+    Route::resource('movimientos', MovimientoController::class);
 });
 
 // Paneles (dashboards)

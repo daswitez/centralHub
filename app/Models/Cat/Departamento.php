@@ -3,25 +3,29 @@
 namespace App\Models\Cat;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * Modelo Departamento para tabla cat.departamento
- * - PK: departamento_id (identity)
- * - Sin timestamps
+ * Class Cat.departamento
+ *
+ * @property $departamento_id
+ * @property $nombre
+ *
+ * @package App
+ * @mixin \Illuminate\Database\Eloquent\Builder
  */
 class Departamento extends Model
 {
     protected $table = 'cat.departamento';
     protected $primaryKey = 'departamento_id';
-    public $timestamps = false;
-    protected $fillable = ['nombre'];
+    
+    protected $perPage = 20;
 
-    /** Relación: un departamento tiene muchos municipios */
-    public function municipios(): HasMany
-    {
-        return $this->hasMany(Municipio::class, 'departamento_id', 'departamento_id');
-    }
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = ['departamento_id', 'nombre'];
+
+
 }
-
-

@@ -3,82 +3,84 @@
 namespace App\Http\Controllers\Cat;
 
 use App\Http\Controllers\Controller;
-use App\Models\Cat\Departamento;
+
 use App\Models\Cat\Municipio;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use App\Http\Requests\Cat\MunicipioRequest;
+use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
-use Illuminate\Validation\Rule;
 
-/**
- * Controlador CRUD de Municipios (cat.municipio)
- */
 class MunicipioController extends Controller
 {
-    /** Listado paginado con filtro por departamento */
+    /**
+     * Display a listing of the resource.
+     */
     public function index(Request $request): View
     {
-        $q = trim((string) $request->get('q', ''));
-        $departamentoId = (int) $request->get('departamento_id', 0);
+        $municipios = Municipio::paginate();
 
-        $municipios = Municipio::query()
-            ->when($departamentoId > 0, fn($b) => $b->where('departamento_id', $departamentoId))
-            ->when($q !== '', fn ($b) => $b->where('nombre', 'ilike', "%{$q}%"))
-            ->orderBy('municipio_id', 'asc')
-            ->paginate(12)
-            ->appends(['q' => $q, 'departamento_id' => $departamentoId]);
-
-        $departamentos = Departamento::orderBy('nombre')->get();
-
-        return view('cat.municipios.index', compact('municipios', 'q', 'departamentoId', 'departamentos'));
+        return view('cat.municipio.index', compact('municipios'))
+            ->with('i', ($request->input('page', 1) - 1) * $municipios->perPage());
     }
 
-    /** Form crear */
+    /**
+     * Show the form for creating a new resource.
+     */
     public function create(): View
     {
-        $departamentos = Departamento::orderBy('nombre')->get();
-        return view('cat.municipios.create', compact('departamentos'));
+        $municipio = new Municipio();
+
+        return view('cat.municipio.create', compact('municipio'));
     }
 
-    /** Guardar */
-    public function store(Request $request): RedirectResponse
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(MunicipioRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'departamento_id' => ['required', 'integer', Rule::exists('departamento', 'departamento_id')],
-            'nombre' => ['required', 'string', 'max:120'],
-        ]);
+        Municipio::create($request->validated());
 
-        Municipio::create($validated);
-        return redirect()->route('cat.municipios.index')->with('status', 'Municipio creado.');
+        return Redirect::route('cat.municipios.index')
+            ->with('success', 'Municipio created successfully.');
     }
 
-    /** Form editar */
-    public function edit(int $id): View
+    /**
+     * Display the specified resource.
+     */
+    public function show($id): View
     {
-        $municipio = Municipio::findOrFail($id);
-        $departamentos = Departamento::orderBy('nombre')->get();
-        return view('cat.municipios.edit', compact('municipio', 'departamentos'));
+        $municipio = Municipio::find($id);
+
+        return view('cat.municipio.show', compact('municipio'));
     }
 
-    /** Actualizar */
-    public function update(Request $request, int $id): RedirectResponse
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit($id): View
     {
-        $municipio = Municipio::findOrFail($id);
-        $validated = $request->validate([
-            'departamento_id' => ['required', 'integer', Rule::exists('departamento', 'departamento_id')],
-            'nombre' => ['required', 'string', 'max:120'],
-        ]);
-        $municipio->update($validated);
-        return redirect()->route('cat.municipios.index')->with('status', 'Municipio actualizado.');
+        $municipio = Municipio::find($id);
+
+        return view('cat.municipio.edit', compact('municipio'));
     }
 
-    /** Eliminar */
-    public function destroy(int $id): RedirectResponse
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(MunicipioRequest $request, Municipio $municipio): RedirectResponse
     {
-        $municipio = Municipio::findOrFail($id);
-        $municipio->delete();
-        return redirect()->route('cat.municipios.index')->with('status', 'Municipio eliminado.');
+        $municipio->update($request->validated());
+
+        return Redirect::route('cat.municipios.index')
+            ->with('success', 'Municipio updated successfully');
+    }
+
+    public function destroy($id): RedirectResponse
+    {
+        Municipio::find($id)->delete();
+
+        return Redirect::route('cat.municipios.index')
+            ->with('success', 'Municipio deleted successfully');
     }
 }
-
-

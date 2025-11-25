@@ -3,68 +3,84 @@
 namespace App\Http\Controllers\Cat;
 
 use App\Http\Controllers\Controller;
+
 use App\Models\Cat\Transportista;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use App\Http\Requests\Cat\TransportistaRequest;
+use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
 
 class TransportistaController extends Controller
 {
+    /**
+     * Display a listing of the resource.
+     */
     public function index(Request $request): View
     {
-        $q = trim((string) $request->get('q', ''));
-        $items = Transportista::query()
-            ->when($q !== '', function ($b) use ($q) {
-                $b->where('codigo_transp', 'ilike', "%{$q}%")
-                    ->orWhere('nombre', 'ilike', "%{$q}%");
-            })
-            ->orderBy('transportista_id', 'asc')
-            ->paginate(12)
-            ->appends(['q' => $q]);
+        $transportista = Transportista::paginate();
 
-        return view('cat.transportistas.index', ['transportistas' => $items, 'q' => $q]);
+        return view('cat.transportistum.index', compact('transportista'))
+            ->with('i', ($request->input('page', 1) - 1) * $transportista->perPage());
     }
 
+    /**
+     * Show the form for creating a new resource.
+     */
     public function create(): View
     {
-        return view('cat.transportistas.create');
+        $transportista = new Transportista();
+
+        return view('cat.transportistum.create', compact('cat.transportistum'));
     }
 
-    public function store(Request $request): RedirectResponse
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(TransportistaRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'codigo_transp' => ['required', 'string', 'max:40'],
-            'nombre' => ['required', 'string', 'max:140'],
-            'nro_licencia' => ['nullable', 'string', 'max:60'],
-        ]);
-        Transportista::create($validated);
-        return redirect()->route('cat.transportistas.index')->with('status', 'Transportista creado.');
+        Transportista::create($request->validated());
+
+        return Redirect::route('cat.transportista.index')
+            ->with('success', 'Transportista created successfully.');
     }
 
-    public function edit(int $id): View
+    /**
+     * Display the specified resource.
+     */
+    public function show($id): View
     {
-        $transportista = Transportista::findOrFail($id);
-        return view('cat.transportistas.edit', compact('transportista'));
+        $transportista = Transportista::find($id);
+
+        return view('cat.transportistum.show', compact('cat.transportistum'));
     }
 
-    public function update(Request $request, int $id): RedirectResponse
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit($id): View
     {
-        $transportista = Transportista::findOrFail($id);
-        $validated = $request->validate([
-            'codigo_transp' => ['required', 'string', 'max:40'],
-            'nombre' => ['required', 'string', 'max:140'],
-            'nro_licencia' => ['nullable', 'string', 'max:60'],
-        ]);
-        $transportista->update($validated);
-        return redirect()->route('cat.transportistas.index')->with('status', 'Transportista actualizado.');
+        $transportista = Transportista::find($id);
+
+        return view('cat.transportistum.edit', compact('cat.transportistum'));
     }
 
-    public function destroy(int $id): RedirectResponse
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(TransportistaRequest $request, Transportista $transportista): RedirectResponse
     {
-        $transportista = Transportista::findOrFail($id);
-        $transportista->delete();
-        return redirect()->route('cat.transportistas.index')->with('status', 'Transportista eliminado.');
+        $transportista->update($request->validated());
+
+        return Redirect::route('cat.transportista.index')
+            ->with('success', 'Transportista updated successfully');
+    }
+
+    public function destroy($id): RedirectResponse
+    {
+        Transportista::find($id)->delete();
+
+        return Redirect::route('cat.transportista.index')
+            ->with('success', 'Transportista deleted successfully');
     }
 }
-
-

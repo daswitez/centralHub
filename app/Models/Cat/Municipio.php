@@ -3,26 +3,39 @@
 namespace App\Models\Cat;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Modelo Municipio para tabla cat.municipio
- * - PK: municipio_id (identity)
- * - FK: departamento_id -> cat.departamento
- * - Sin timestamps
+ * Class Cat.municipio
+ *
+ * @property $municipio_id
+ * @property $departamento_id
+ * @property $nombre
+ *
+ * @property Departamento $departamento
+ * @package App
+ * @mixin \Illuminate\Database\Eloquent\Builder
  */
 class Municipio extends Model
 {
     protected $table = 'cat.municipio';
     protected $primaryKey = 'municipio_id';
-    public $timestamps = false;
-    protected $fillable = ['departamento_id', 'nombre'];
+    
+    protected $perPage = 20;
 
-    /** Relación: municipio pertenece a un departamento */
-    public function departamento(): BelongsTo
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = ['municipio_id', 'departamento_id', 'nombre'];
+
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function departamento()
     {
-        return $this->belongsTo(Departamento::class, 'departamento_id', 'departamento_id');
+        return $this->belongsTo(\App\Models\Cat\Departamento::class, 'departamento_id', 'departamento_id');
     }
+    
 }
-
-

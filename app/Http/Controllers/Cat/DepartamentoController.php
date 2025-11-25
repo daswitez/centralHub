@@ -3,71 +3,84 @@
 namespace App\Http\Controllers\Cat;
 
 use App\Http\Controllers\Controller;
+
 use App\Models\Cat\Departamento;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use App\Http\Requests\Cat\DepartamentoRequest;
+use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
 
-/**
- * Controlador CRUD de Departamentos (cat.departamento)
- */
 class DepartamentoController extends Controller
 {
-    /** Listado paginado */
+    /**
+     * Display a listing of the resource.
+     */
     public function index(Request $request): View
     {
-        $q = trim((string) $request->get('q', ''));
-        $departamentos = Departamento::query()
-            ->when($q !== '', fn ($qBuilder) => $qBuilder->where('nombre', 'ilike', "%{$q}%"))
-            ->orderBy('departamento_id', 'asc')
-            ->paginate(12)
-            ->appends(['q' => $q]);
+        $departamentos = Departamento::paginate();
 
-        return view('cat.departamentos.index', compact('departamentos', 'q'));
+        return view('cat.departamento.index', compact('departamentos'))
+            ->with('i', ($request->input('page', 1) - 1) * $departamentos->perPage());
     }
 
-    /** Form crear */
+    /**
+     * Show the form for creating a new resource.
+     */
     public function create(): View
     {
-        return view('cat.departamentos.create');
+        $departamento = new Departamento();
+
+        return view('cat.departamento.create', compact('departamento'));
     }
 
-    /** Guardar */
-    public function store(Request $request): RedirectResponse
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(DepartamentoRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'nombre' => ['required', 'string', 'max:80'],
-        ]);
+        Departamento::create($request->validated());
 
-        Departamento::create($validated);
-        return redirect()->route('cat.departamentos.index')->with('status', 'Departamento creado.');
+        return Redirect::route('cat.departamentos.index')
+            ->with('success', 'Departamento created successfully.');
     }
 
-    /** Form editar */
-    public function edit(int $id): View
+    /**
+     * Display the specified resource.
+     */
+    public function show($id): View
     {
-        $departamento = Departamento::findOrFail($id);
-        return view('cat.departamentos.edit', compact('departamento'));
+        $departamento = Departamento::find($id);
+
+        return view('cat.departamento.show', compact('departamento'));
     }
 
-    /** Actualizar */
-    public function update(Request $request, int $id): RedirectResponse
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit($id): View
     {
-        $departamento = Departamento::findOrFail($id);
-        $validated = $request->validate([
-            'nombre' => ['required', 'string', 'max:80'],
-        ]);
-        $departamento->update($validated);
-        return redirect()->route('cat.departamentos.index')->with('status', 'Departamento actualizado.');
+        $departamento = Departamento::find($id);
+
+        return view('cat.departamento.edit', compact('departamento'));
     }
 
-    /** Eliminar */
-    public function destroy(int $id): RedirectResponse
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(DepartamentoRequest $request, Departamento $departamento): RedirectResponse
     {
-        $departamento = Departamento::findOrFail($id);
-        $departamento->delete();
-        return redirect()->route('cat.departamentos.index')->with('status', 'Departamento eliminado.');
+        $departamento->update($request->validated());
+
+        return Redirect::route('cat.departamentos.index')
+            ->with('success', 'Departamento updated successfully');
+    }
+
+    public function destroy($id): RedirectResponse
+    {
+        Departamento::find($id)->delete();
+
+        return Redirect::route('cat.departamentos.index')
+            ->with('success', 'Departamento deleted successfully');
     }
 }
-
-

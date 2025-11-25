@@ -3,84 +3,84 @@
 namespace App\Http\Controllers\Cat;
 
 use App\Http\Controllers\Controller;
-use App\Models\Cat\VariedadPapa;
+
+use App\Models\Cat\Variedadpapa;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use App\Http\Requests\Cat\VariedadpapaRequest;
+use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
 
-/**
- * Controlador CRUD de Variedades de Papa (cat.variedadpapa)
- */
-class VariedadPapaController extends Controller
+class VariedadpapaController extends Controller
 {
-    /** Listado paginado */
+    /**
+     * Display a listing of the resource.
+     */
     public function index(Request $request): View
     {
-        $q = trim((string) $request->get('q', ''));
-        $variedades = VariedadPapa::query()
-            ->when($q !== '', function ($b) use ($q) {
-                $b->where(function ($q2) use ($q) {
-                    $q2->where('codigo_variedad', 'ilike', "%{$q}%")
-                        ->orWhere('nombre_comercial', 'ilike', "%{$q}%");
-                });
-            })
-            ->orderBy('variedad_id', 'asc')
-            ->paginate(12)
-            ->appends(['q' => $q]);
+        $variedadpapas = Variedadpapa::paginate();
 
-        return view('cat.variedades.index', compact('variedades', 'q'));
+        return view('cat.variedadpapa.index', compact('variedadpapas'))
+            ->with('i', ($request->input('page', 1) - 1) * $variedadpapas->perPage());
     }
 
-    /** Form crear */
+    /**
+     * Show the form for creating a new resource.
+     */
     public function create(): View
     {
-        return view('cat.variedades.create');
+        $variedadpapa = new Variedadpapa();
+
+        return view('cat.variedadpapa.create', compact('variedadpapa'));
     }
 
-    /** Guardar */
-    public function store(Request $request): RedirectResponse
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(VariedadpapaRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'codigo_variedad' => ['required', 'string', 'max:40'],
-            'nombre_comercial' => ['required', 'string', 'max:120'],
-            'aptitud' => ['nullable', 'string', 'max:80'],
-            'ciclo_dias_min' => ['nullable', 'integer'],
-            'ciclo_dias_max' => ['nullable', 'integer'],
-        ]);
+        Variedadpapa::create($request->validated());
 
-        VariedadPapa::create($validated);
-        return redirect()->route('cat.variedades.index')->with('status', 'Variedad creada.');
+        return Redirect::route('cat.variedadpapas.index')
+            ->with('success', 'Variedadpapa created successfully.');
     }
 
-    /** Form editar */
-    public function edit(int $id): View
+    /**
+     * Display the specified resource.
+     */
+    public function show($id): View
     {
-        $variedad = VariedadPapa::findOrFail($id);
-        return view('cat.variedades.edit', compact('variedad'));
+        $variedadpapa = Variedadpapa::find($id);
+
+        return view('cat.variedadpapa.show', compact('variedadpapa'));
     }
 
-    /** Actualizar */
-    public function update(Request $request, int $id): RedirectResponse
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit($id): View
     {
-        $variedad = VariedadPapa::findOrFail($id);
-        $validated = $request->validate([
-            'codigo_variedad' => ['required', 'string', 'max:40'],
-            'nombre_comercial' => ['required', 'string', 'max:120'],
-            'aptitud' => ['nullable', 'string', 'max:80'],
-            'ciclo_dias_min' => ['nullable', 'integer'],
-            'ciclo_dias_max' => ['nullable', 'integer'],
-        ]);
-        $variedad->update($validated);
-        return redirect()->route('cat.variedades.index')->with('status', 'Variedad actualizada.');
+        $variedadpapa = Variedadpapa::find($id);
+
+        return view('cat.variedadpapa.edit', compact('variedadpapa'));
     }
 
-    /** Eliminar */
-    public function destroy(int $id): RedirectResponse
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(VariedadpapaRequest $request, Variedadpapa $variedadpapa): RedirectResponse
     {
-        $variedad = VariedadPapa::findOrFail($id);
-        $variedad->delete();
-        return redirect()->route('cat.variedades.index')->with('status', 'Variedad eliminada.');
+        $variedadpapa->update($request->validated());
+
+        return Redirect::route('cat.variedadpapas.index')
+            ->with('success', 'Variedadpapa updated successfully');
+    }
+
+    public function destroy($id): RedirectResponse
+    {
+        Variedadpapa::find($id)->delete();
+
+        return Redirect::route('cat.variedadpapas.index')
+            ->with('success', 'Variedadpapa deleted successfully');
     }
 }
-
-

@@ -3,42 +3,48 @@
 namespace App\Models\Logistica;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class RutaPunto extends Model
+/**
+ * Class Logistica.rutapunto
+ *
+ * @property $ruta_id
+ * @property $orden
+ * @property $cliente_id
+ *
+ * @property Cliente $cliente
+ * @property Rutum $rutum
+ * @package App
+ * @mixin \Illuminate\Database\Eloquent\Builder
+ */
+class Rutapunto extends Model
 {
     protected $table = 'logistica.rutapunto';
-    public $timestamps = false;
-    public $incrementing = false;
-    protected $primaryKey = null; // composite key handled manually
+    protected $primaryKey = 'ruta_id';
+    
+    protected $perPage = 20;
 
-    protected $fillable = [
-        'ruta_id',
-        'orden',
-        'cliente_id',
-    ];
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = ['ruta_id', 'orden', 'cliente_id'];
 
-    public function ruta(): BelongsTo
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function cliente()
     {
-        return $this->belongsTo(Ruta::class, 'ruta_id', 'ruta_id');
+        return $this->belongsTo(\App\Models\Cat\Cliente::class, 'cliente_id', 'cliente_id');
     }
+    
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function rutum()
+    {
+        return $this->belongsTo(\App\Models\Rutum::class, 'ruta_id', 'ruta_id');
+    }
+    
 }
-
-<?php
-
-namespace App\Models\Logistica;
-
-use Illuminate\Database\Eloquent\Model;
-
-class RutaPunto extends Model
-{
-    protected $table = 'logistica.rutapunto';
-    public $timestamps = false;
-    protected $fillable = [
-        'ruta_id',
-        'orden',
-        'cliente_id',
-    ];
-}
-
-

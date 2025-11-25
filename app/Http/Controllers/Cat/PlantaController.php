@@ -3,78 +3,84 @@
 namespace App\Http\Controllers\Cat;
 
 use App\Http\Controllers\Controller;
-use App\Models\Cat\Municipio;
+
 use App\Models\Cat\Planta;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use App\Http\Requests\Cat\PlantaRequest;
+use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
-use Illuminate\Validation\Rule;
 
 class PlantaController extends Controller
 {
+    /**
+     * Display a listing of the resource.
+     */
     public function index(Request $request): View
     {
-        $q = trim((string) $request->get('q', ''));
-        $plantas = Planta::query()
-            ->when($q !== '', function ($b) use ($q) {
-                $b->where('codigo_planta', 'ilike', "%{$q}%")
-                    ->orWhere('nombre', 'ilike', "%{$q}%");
-            })
-            ->orderBy('planta_id', 'asc')
-            ->paginate(12)
-            ->appends(['q' => $q]);
+        $planta = Planta::paginate();
 
-        return view('cat.plantas.index', compact('plantas', 'q'));
+        return view('cat.plantum.index', compact('planta'))
+            ->with('i', ($request->input('page', 1) - 1) * $planta->perPage());
     }
 
+    /**
+     * Show the form for creating a new resource.
+     */
     public function create(): View
     {
-        $municipios = Municipio::orderBy('nombre')->get();
-        return view('cat.plantas.create', compact('municipios'));
+        $planta = new Planta();
+
+        return view('cat.plantum.create', compact('cat.plantum'));
     }
 
-    public function store(Request $request): RedirectResponse
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(PlantaRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'codigo_planta' => ['required', 'string', 'max:40'],
-            'nombre' => ['required', 'string', 'max:140'],
-            'municipio_id' => ['required', 'integer', Rule::exists('municipio', 'municipio_id')],
-            'direccion' => ['nullable', 'string', 'max:200'],
-            'lat' => ['nullable', 'numeric'],
-            'lon' => ['nullable', 'numeric'],
-        ]);
-        Planta::create($validated);
-        return redirect()->route('cat.plantas.index')->with('status', 'Planta creada.');
+        Planta::create($request->validated());
+
+        return Redirect::route('cat.planta.index')
+            ->with('success', 'Planta created successfully.');
     }
 
-    public function edit(int $id): View
+    /**
+     * Display the specified resource.
+     */
+    public function show($id): View
     {
-        $planta = Planta::findOrFail($id);
-        $municipios = Municipio::orderBy('nombre')->get();
-        return view('cat.plantas.edit', compact('planta', 'municipios'));
+        $planta = Planta::find($id);
+
+        return view('cat.plantum.show', compact('cat.plantum'));
     }
 
-    public function update(Request $request, int $id): RedirectResponse
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit($id): View
     {
-        $planta = Planta::findOrFail($id);
-        $validated = $request->validate([
-            'codigo_planta' => ['required', 'string', 'max:40'],
-            'nombre' => ['required', 'string', 'max:140'],
-            'municipio_id' => ['required', 'integer', Rule::exists('municipio', 'municipio_id')],
-            'direccion' => ['nullable', 'string', 'max:200'],
-            'lat' => ['nullable', 'numeric'],
-            'lon' => ['nullable', 'numeric'],
-        ]);
-        $planta->update($validated);
-        return redirect()->route('cat.plantas.index')->with('status', 'Planta actualizada.');
+        $planta = Planta::find($id);
+
+        return view('cat.plantum.edit', compact('cat.plantum'));
     }
 
-    public function destroy(int $id): RedirectResponse
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(PlantaRequest $request, Planta $planta): RedirectResponse
     {
-        $planta = Planta::findOrFail($id);
-        $planta->delete();
-        return redirect()->route('cat.plantas.index')->with('status', 'Planta eliminada.');
+        $planta->update($request->validated());
+
+        return Redirect::route('cat.planta.index')
+            ->with('success', 'Planta updated successfully');
+    }
+
+    public function destroy($id): RedirectResponse
+    {
+        Planta::find($id)->delete();
+
+        return Redirect::route('cat.planta.index')
+            ->with('success', 'Planta deleted successfully');
     }
 }
-
-

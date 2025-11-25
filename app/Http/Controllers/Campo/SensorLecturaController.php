@@ -3,89 +3,84 @@
 namespace App\Http\Controllers\Campo;
 
 use App\Http\Controllers\Controller;
-use App\Models\Campo\LoteCampo;
-use App\Models\Campo\SensorLectura;
+
+use App\Models\Campo\Sensorlectura;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use App\Http\Requests\Campo\SensorlecturaRequest;
+use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
-use Illuminate\Validation\Rule;
 
-class SensorLecturaController extends Controller
+class SensorlecturaController extends Controller
 {
-    /** Listado con filtros por lote, tipo y rango de fechas */
+    /**
+     * Display a listing of the resource.
+     */
     public function index(Request $request): View
     {
-        $tipo = trim((string) $request->get('tipo', ''));
-        $loteId = (int) $request->get('lote_campo_id', 0);
-        $desde = $request->get('desde');
-        $hasta = $request->get('hasta');
+        $sensorlecturas = Sensorlectura::paginate();
 
-        $lecturas = SensorLectura::query()
-            ->when($loteId > 0, fn($b) => $b->where('lote_campo_id', $loteId))
-            ->when($tipo !== '', fn($b) => $b->where('tipo', 'ilike', "%{$tipo}%"))
-            ->when($desde, fn($b) => $b->where('fecha_hora', '>=', $desde))
-            ->when($hasta, fn($b) => $b->where('fecha_hora', '<=', $hasta))
-            ->orderByDesc('fecha_hora')
-            ->paginate(15)
-            ->appends(['tipo' => $tipo, 'lote_campo_id' => $loteId, 'desde' => $desde, 'hasta' => $hasta]);
-
-        $lotes = LoteCampo::orderByDesc('lote_campo_id')->limit(100)->get();
-
-        return view('campo.lecturas.index', compact('lecturas', 'lotes', 'tipo', 'loteId', 'desde', 'hasta'));
+        return view('campo.sensorlectura.index', compact('sensorlecturas'))
+            ->with('i', ($request->input('page', 1) - 1) * $sensorlecturas->perPage());
     }
 
-    /** Form crear */
+    /**
+     * Show the form for creating a new resource.
+     */
     public function create(): View
     {
-        $lotes = LoteCampo::orderByDesc('lote_campo_id')->limit(200)->get();
-        return view('campo.lecturas.create', compact('lotes'));
+        $sensorlectura = new Sensorlectura();
+
+        return view('campo.sensorlectura.create', compact('sensorlectura'));
     }
 
-    /** Guardar */
-    public function store(Request $request): RedirectResponse
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(SensorlecturaRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'lote_campo_id' => ['required', 'integer', Rule::exists('lotecampo', 'lote_campo_id')],
-            'fecha_hora' => ['required', 'date'],
-            'tipo' => ['required', 'string', 'max:50'],
-            'valor_num' => ['nullable', 'numeric'],
-            'valor_texto' => ['nullable', 'string', 'max:200'],
-        ]);
+        Sensorlectura::create($request->validated());
 
-        SensorLectura::create($validated);
-        return redirect()->route('campo.lecturas.index')->with('status', 'Lectura registrada.');
+        return Redirect::route('campo.sensorlecturas.index')
+            ->with('success', 'Sensorlectura created successfully.');
     }
 
-    /** Form editar */
-    public function edit(int $id): View
+    /**
+     * Display the specified resource.
+     */
+    public function show($id): View
     {
-        $lectura = SensorLectura::findOrFail($id);
-        $lotes = LoteCampo::orderByDesc('lote_campo_id')->limit(200)->get();
-        return view('campo.lecturas.edit', compact('lectura', 'lotes'));
+        $sensorlectura = Sensorlectura::find($id);
+
+        return view('campo.sensorlectura.show', compact('sensorlectura'));
     }
 
-    /** Actualizar */
-    public function update(Request $request, int $id): RedirectResponse
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit($id): View
     {
-        $lectura = SensorLectura::findOrFail($id);
-        $validated = $request->validate([
-            'lote_campo_id' => ['required', 'integer', Rule::exists('lotecampo', 'lote_campo_id')],
-            'fecha_hora' => ['required', 'date'],
-            'tipo' => ['required', 'string', 'max:50'],
-            'valor_num' => ['nullable', 'numeric'],
-            'valor_texto' => ['nullable', 'string', 'max:200'],
-        ]);
-        $lectura->update($validated);
-        return redirect()->route('campo.lecturas.index')->with('status', 'Lectura actualizada.');
+        $sensorlectura = Sensorlectura::find($id);
+
+        return view('campo.sensorlectura.edit', compact('sensorlectura'));
     }
 
-    /** Eliminar */
-    public function destroy(int $id): RedirectResponse
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(SensorlecturaRequest $request, Sensorlectura $sensorlectura): RedirectResponse
     {
-        $lectura = SensorLectura::findOrFail($id);
-        $lectura->delete();
-        return redirect()->route('campo.lecturas.index')->with('status', 'Lectura eliminada.');
+        $sensorlectura->update($request->validated());
+
+        return Redirect::route('campo.sensorlecturas.index')
+            ->with('success', 'Sensorlectura updated successfully');
+    }
+
+    public function destroy($id): RedirectResponse
+    {
+        Sensorlectura::find($id)->delete();
+
+        return Redirect::route('campo.sensorlecturas.index')
+            ->with('success', 'Sensorlectura deleted successfully');
     }
 }
-
-

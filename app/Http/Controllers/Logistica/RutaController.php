@@ -3,62 +3,84 @@
 namespace App\Http\Controllers\Logistica;
 
 use App\Http\Controllers\Controller;
+
 use App\Models\Logistica\Ruta;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use App\Http\Requests\Logistica\RutaRequest;
+use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
 
 class RutaController extends Controller
 {
+    /**
+     * Display a listing of the resource.
+     */
     public function index(Request $request): View
     {
-        $q = trim((string) $request->get('q', ''));
-        $items = Ruta::query()
-            ->when($q !== '', fn($b) => $b->where('codigo_ruta', 'ilike', "%{$q}%")->orWhere('descripcion', 'ilike', "%{$q}%"))
-            ->orderByDesc('ruta_id')
-            ->paginate(12)
-            ->appends(['q' => $q]);
-        return view('logistica.rutas.index', ['rutas' => $items, 'q' => $q]);
+        $ruta = Ruta::paginate();
+
+        return view('logistica.rutum.index', compact('ruta'))
+            ->with('i', ($request->input('page', 1) - 1) * $ruta->perPage());
     }
 
+    /**
+     * Show the form for creating a new resource.
+     */
     public function create(): View
     {
-        return view('logistica.rutas.create');
+        $ruta = new Ruta();
+
+        return view('logistica.rutum.create', compact('logistica.rutum'));
     }
 
-    public function store(Request $request): RedirectResponse
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(RutaRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'codigo_ruta' => ['required', 'string', 'max:40'],
-            'descripcion' => ['nullable', 'string', 'max:160'],
-        ]);
-        Ruta::create($validated);
-        return redirect()->route('logistica.rutas.index')->with('status', 'Ruta creada.');
+        Ruta::create($request->validated());
+
+        return Redirect::route('logistica.ruta.index')
+            ->with('success', 'Ruta created successfully.');
     }
 
-    public function edit(int $id): View
+    /**
+     * Display the specified resource.
+     */
+    public function show($id): View
     {
-        $ruta = Ruta::findOrFail($id);
-        return view('logistica.rutas.edit', compact('ruta'));
+        $ruta = Ruta::find($id);
+
+        return view('logistica.rutum.show', compact('logistica.rutum'));
     }
 
-    public function update(Request $request, int $id): RedirectResponse
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit($id): View
     {
-        $ruta = Ruta::findOrFail($id);
-        $validated = $request->validate([
-            'codigo_ruta' => ['required', 'string', 'max:40'],
-            'descripcion' => ['nullable', 'string', 'max:160'],
-        ]);
-        $ruta->update($validated);
-        return redirect()->route('logistica.rutas.index')->with('status', 'Ruta actualizada.');
+        $ruta = Ruta::find($id);
+
+        return view('logistica.rutum.edit', compact('logistica.rutum'));
     }
 
-    public function destroy(int $id): RedirectResponse
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(RutaRequest $request, Ruta $ruta): RedirectResponse
     {
-        $ruta = Ruta::findOrFail($id);
-        $ruta->delete();
-        return redirect()->route('logistica.rutas.index')->with('status', 'Ruta eliminada.');
+        $ruta->update($request->validated());
+
+        return Redirect::route('logistica.ruta.index')
+            ->with('success', 'Ruta updated successfully');
+    }
+
+    public function destroy($id): RedirectResponse
+    {
+        Ruta::find($id)->delete();
+
+        return Redirect::route('logistica.ruta.index')
+            ->with('success', 'Ruta deleted successfully');
     }
 }
-
-
