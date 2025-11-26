@@ -70,16 +70,18 @@ class ClienteController extends Controller
         return redirect()->route('cat.clientes.index')->with('status', 'Cliente creado.');
     }
 
-    public function edit(int $id): View
+    public function edit($id): View
     {
-        $cliente = Cliente::findOrFail($id);
+        $clienteId = (int) $id;
+        $cliente = Cliente::findOrFail($clienteId);
         $municipios = Municipio::orderBy('nombre')->get();
         return view('cat.clientes.edit', compact('cliente', 'municipios'));
     }
 
-    public function update(Request $request, int $id): RedirectResponse|JsonResponse
+    public function update(Request $request, $id): RedirectResponse|JsonResponse
     {
-        $cliente = Cliente::findOrFail($id);
+        $clienteId = (int) $id;
+        $cliente = Cliente::findOrFail($clienteId);
         $validated = $request->validate([
             'codigo_cliente' => ['required', 'string', 'max:40'],
             'nombre' => ['required', 'string', 'max:160'],
@@ -102,9 +104,10 @@ class ClienteController extends Controller
         return redirect()->route('cat.clientes.index')->with('status', 'Cliente actualizado.');
     }
 
-    public function destroy(Request $request, int $id): RedirectResponse|JsonResponse
+    public function destroy(Request $request, $id): RedirectResponse|JsonResponse
     {
-        $cliente = Cliente::findOrFail($id);
+        $clienteId = (int) $id;
+        $cliente = Cliente::findOrFail($clienteId);
         $cliente->delete();
 
         if ($request->wantsJson()) {

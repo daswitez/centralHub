@@ -82,17 +82,19 @@ class SensorLecturaController extends Controller
     }
 
     /** Form editar */
-    public function edit(int $id): View
+    public function edit($id): View
     {
-        $lectura = SensorLectura::findOrFail($id);
+        $lecturaId = (int) $id;
+        $lectura = SensorLectura::findOrFail($lecturaId);
         $lotes = LoteCampo::orderByDesc('lote_campo_id')->limit(200)->get();
         return view('campo.lecturas.edit', compact('lectura', 'lotes'));
     }
 
     /** Actualizar */
-    public function update(Request $request, int $id): RedirectResponse|JsonResponse
+    public function update(Request $request, $id): RedirectResponse|JsonResponse
     {
-        $lectura = SensorLectura::findOrFail($id);
+        $lecturaId = (int) $id;
+        $lectura = SensorLectura::findOrFail($lecturaId);
         $validated = $request->validate([
             'lote_campo_id' => ['required', 'integer', Rule::exists('lotecampo', 'lote_campo_id')],
             'fecha_hora' => ['required', 'date'],
@@ -114,9 +116,10 @@ class SensorLecturaController extends Controller
     }
 
     /** Eliminar */
-    public function destroy(Request $request, int $id): RedirectResponse|JsonResponse
+    public function destroy(Request $request, $id): RedirectResponse|JsonResponse
     {
-        $lectura = SensorLectura::findOrFail($id);
+        $lecturaId = (int) $id;
+        $lectura = SensorLectura::findOrFail($lecturaId);
         $lectura->delete();
 
         if ($request->wantsJson()) {

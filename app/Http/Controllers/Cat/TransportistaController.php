@@ -62,15 +62,17 @@ class TransportistaController extends Controller
         return redirect()->route('cat.transportistas.index')->with('status', 'Transportista creado.');
     }
 
-    public function edit(int $id): View
+    public function edit($id): View
     {
-        $transportista = Transportista::findOrFail($id);
+        $transportistaId = (int) $id;
+        $transportista = Transportista::findOrFail($transportistaId);
         return view('cat.transportistas.edit', compact('transportista'));
     }
 
-    public function update(Request $request, int $id): RedirectResponse|JsonResponse
+    public function update(Request $request, $id): RedirectResponse|JsonResponse
     {
-        $transportista = Transportista::findOrFail($id);
+        $transportistaId = (int) $id;
+        $transportista = Transportista::findOrFail($transportistaId);
         $validated = $request->validate([
             'codigo_transp' => ['required', 'string', 'max:40'],
             'nombre' => ['required', 'string', 'max:140'],
@@ -89,9 +91,10 @@ class TransportistaController extends Controller
         return redirect()->route('cat.transportistas.index')->with('status', 'Transportista actualizado.');
     }
 
-    public function destroy(Request $request, int $id): RedirectResponse|JsonResponse
+    public function destroy(Request $request, $id): RedirectResponse|JsonResponse
     {
-        $transportista = Transportista::findOrFail($id);
+        $transportistaId = (int) $id;
+        $transportista = Transportista::findOrFail($transportistaId);
         $transportista->delete();
 
         if ($request->wantsJson()) {

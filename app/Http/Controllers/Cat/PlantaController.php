@@ -68,16 +68,18 @@ class PlantaController extends Controller
         return redirect()->route('cat.plantas.index')->with('status', 'Planta creada.');
     }
 
-    public function edit(int $id): View
+    public function edit($id): View
     {
-        $planta = Planta::findOrFail($id);
+        $plantaId = (int) $id;
+        $planta = Planta::findOrFail($plantaId);
         $municipios = Municipio::orderBy('nombre')->get();
         return view('cat.plantas.edit', compact('planta', 'municipios'));
     }
 
-    public function update(Request $request, int $id): RedirectResponse|JsonResponse
+    public function update(Request $request, $id): RedirectResponse|JsonResponse
     {
-        $planta = Planta::findOrFail($id);
+        $plantaId = (int) $id;
+        $planta = Planta::findOrFail($plantaId);
         $validated = $request->validate([
             'codigo_planta' => ['required', 'string', 'max:40'],
             'nombre' => ['required', 'string', 'max:140'],
@@ -99,9 +101,10 @@ class PlantaController extends Controller
         return redirect()->route('cat.plantas.index')->with('status', 'Planta actualizada.');
     }
 
-    public function destroy(Request $request, int $id): RedirectResponse|JsonResponse
+    public function destroy(Request $request, $id): RedirectResponse|JsonResponse
     {
-        $planta = Planta::findOrFail($id);
+        $plantaId = (int) $id;
+        $planta = Planta::findOrFail($plantaId);
         $planta->delete();
 
         if ($request->wantsJson()) {

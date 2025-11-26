@@ -66,16 +66,18 @@ class ProductorController extends Controller
         return redirect()->route('campo.productores.index')->with('status', 'Productor creado.');
     }
 
-    public function edit(int $id): View
+    public function edit($id): View
     {
-        $productor = Productor::findOrFail($id);
+        $productorId = (int) $id;
+        $productor = Productor::findOrFail($productorId);
         $municipios = Municipio::orderBy('nombre')->get();
         return view('campo.productores.edit', compact('productor', 'municipios'));
     }
 
-    public function update(Request $request, int $id): RedirectResponse|JsonResponse
+    public function update(Request $request, $id): RedirectResponse|JsonResponse
     {
-        $productor = Productor::findOrFail($id);
+        $productorId = (int) $id;
+        $productor = Productor::findOrFail($productorId);
         $validated = $request->validate([
             'codigo_productor' => ['required', 'string', 'max:40'],
             'nombre' => ['required', 'string', 'max:140'],
@@ -95,9 +97,10 @@ class ProductorController extends Controller
         return redirect()->route('campo.productores.index')->with('status', 'Productor actualizado.');
     }
 
-    public function destroy(Request $request, int $id): RedirectResponse|JsonResponse
+    public function destroy(Request $request, $id): RedirectResponse|JsonResponse
     {
-        $productor = Productor::findOrFail($id);
+        $productorId = (int) $id;
+        $productor = Productor::findOrFail($productorId);
         $productor->delete();
 
         if ($request->wantsJson()) {

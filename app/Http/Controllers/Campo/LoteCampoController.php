@@ -70,17 +70,19 @@ class LoteCampoController extends Controller
         return redirect()->route('campo.lotes.index')->with('status', 'Lote de campo creado.');
     }
 
-    public function edit(int $id): View
+    public function edit($id): View
     {
-        $lote = LoteCampo::findOrFail($id);
+        $loteId = (int) $id;
+        $lote = LoteCampo::findOrFail($loteId);
         $productores = Productor::orderBy('nombre')->get();
         $variedades = VariedadPapa::orderBy('nombre_comercial')->get();
         return view('campo.lotes.edit', compact('lote', 'productores', 'variedades'));
     }
 
-    public function update(Request $request, int $id): RedirectResponse|JsonResponse
+    public function update(Request $request, $id): RedirectResponse|JsonResponse
     {
-        $lote = LoteCampo::findOrFail($id);
+        $loteId = (int) $id;
+        $lote = LoteCampo::findOrFail($loteId);
         $validated = $request->validate([
             'codigo_lote_campo' => ['required', 'string', 'max:50'],
             'productor_id' => ['required', 'integer', Rule::exists('productor', 'productor_id')],
@@ -103,9 +105,10 @@ class LoteCampoController extends Controller
         return redirect()->route('campo.lotes.index')->with('status', 'Lote de campo actualizado.');
     }
 
-    public function destroy(Request $request, int $id): RedirectResponse|JsonResponse
+    public function destroy(Request $request, $id): RedirectResponse|JsonResponse
     {
-        $lote = LoteCampo::findOrFail($id);
+        $loteId = (int) $id;
+        $lote = LoteCampo::findOrFail($loteId);
         $lote->delete();
 
         if ($request->wantsJson()) {

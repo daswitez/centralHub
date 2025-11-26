@@ -75,16 +75,18 @@ class VariedadPapaController extends Controller
     }
 
     /** Form editar */
-    public function edit(int $id): View
+    public function edit($id): View
     {
-        $variedad = VariedadPapa::findOrFail($id);
+        $variedadId = (int) $id;
+        $variedad = VariedadPapa::findOrFail($variedadId);
         return view('cat.variedades.edit', compact('variedad'));
     }
 
     /** Actualizar */
-    public function update(Request $request, int $id): RedirectResponse|JsonResponse
+    public function update(Request $request, $id): RedirectResponse|JsonResponse
     {
-        $variedad = VariedadPapa::findOrFail($id);
+        $variedadId = (int) $id;
+        $variedad = VariedadPapa::findOrFail($variedadId);
         $validated = $request->validate([
             'codigo_variedad' => ['required', 'string', 'max:40'],
             'nombre_comercial' => ['required', 'string', 'max:120'],
@@ -106,9 +108,10 @@ class VariedadPapaController extends Controller
     }
 
     /** Eliminar */
-    public function destroy(Request $request, int $id): RedirectResponse|JsonResponse
+    public function destroy(Request $request, $id): RedirectResponse|JsonResponse
     {
-        $variedad = VariedadPapa::findOrFail($id);
+        $variedadId = (int) $id;
+        $variedad = VariedadPapa::findOrFail($variedadId);
         $variedad->delete();
 
         if ($request->wantsJson()) {

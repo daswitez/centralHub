@@ -64,16 +64,18 @@ class DepartamentoController extends Controller
     }
 
     /** Form editar */
-    public function edit(int $id): View
+    public function edit($id): View
     {
-        $departamento = Departamento::findOrFail($id);
+        $departamentoId = (int) $id;
+        $departamento = Departamento::findOrFail($departamentoId);
         return view('cat.departamentos.edit', compact('departamento'));
     }
 
     /** Actualizar */
-    public function update(Request $request, int $id): RedirectResponse|JsonResponse
+    public function update(Request $request, $id): RedirectResponse|JsonResponse
     {
-        $departamento = Departamento::findOrFail($id);
+        $departamentoId = (int) $id;
+        $departamento = Departamento::findOrFail($departamentoId);
         $validated = $request->validate([
             'nombre' => ['required', 'string', 'max:80'],
         ]);
@@ -92,9 +94,10 @@ class DepartamentoController extends Controller
     }
 
     /** Eliminar */
-    public function destroy(Request $request, int $id): RedirectResponse|JsonResponse
+    public function destroy(Request $request, $id): RedirectResponse|JsonResponse
     {
-        $departamento = Departamento::findOrFail($id);
+        $departamentoId = (int) $id;
+        $departamento = Departamento::findOrFail($departamentoId);
         $departamento->delete();
 
         // Para app móvil devolvemos confirmación en JSON

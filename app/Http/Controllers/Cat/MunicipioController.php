@@ -76,17 +76,19 @@ class MunicipioController extends Controller
     }
 
     /** Form editar */
-    public function edit(int $id): View
+    public function edit($id): View
     {
-        $municipio = Municipio::findOrFail($id);
+        $municipioId = (int) $id;
+        $municipio = Municipio::findOrFail($municipioId);
         $departamentos = Departamento::orderBy('nombre')->get();
         return view('cat.municipios.edit', compact('municipio', 'departamentos'));
     }
 
     /** Actualizar */
-    public function update(Request $request, int $id): RedirectResponse|JsonResponse
+    public function update(Request $request, $id): RedirectResponse|JsonResponse
     {
-        $municipio = Municipio::findOrFail($id);
+        $municipioId = (int) $id;
+        $municipio = Municipio::findOrFail($municipioId);
         $validated = $request->validate([
             'departamento_id' => ['required', 'integer', Rule::exists('departamento', 'departamento_id')],
             'nombre' => ['required', 'string', 'max:120'],
@@ -105,9 +107,10 @@ class MunicipioController extends Controller
     }
 
     /** Eliminar */
-    public function destroy(Request $request, int $id): RedirectResponse|JsonResponse
+    public function destroy(Request $request, $id): RedirectResponse|JsonResponse
     {
-        $municipio = Municipio::findOrFail($id);
+        $municipioId = (int) $id;
+        $municipio = Municipio::findOrFail($municipioId);
         $municipio->delete();
 
         if ($request->wantsJson()) {
