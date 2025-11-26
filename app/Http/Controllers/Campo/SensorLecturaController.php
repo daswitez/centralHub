@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Campo;
 use App\Http\Controllers\Controller;
 use App\Models\Campo\LoteCampo;
 use App\Models\Campo\SensorLectura;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -13,7 +14,7 @@ use Illuminate\Validation\Rule;
 class SensorLecturaController extends Controller
 {
     /** Listado con filtros por lote, tipo y rango de fechas */
-    public function index(Request $request): View
+    public function index(Request $request): View|JsonResponse
     {
         $tipo = trim((string) $request->get('tipo', ''));
         $loteId = (int) $request->get('lote_campo_id', 0);
@@ -31,6 +32,21 @@ class SensorLecturaController extends Controller
 
         $lotes = LoteCampo::orderByDesc('lote_campo_id')->limit(100)->get();
 
+        if ($request->wantsJson()) {
+            return response()->json([
+                'status' => 'ok',
+                'message' => 'Listado de lecturas obtenido correctamente.',
+                'data' => $lecturas,
+                'filters' => [
+                    'tipo' => $tipo,
+                    'lote_campo_id' => $loteId,
+                    'desde' => $desde,
+                    'hasta' => $hasta,
+                ],
+                'lotes' => $lotes,
+            ]);
+        }
+
         return view('campo.lecturas.index', compact('lecturas', 'lotes', 'tipo', 'loteId', 'desde', 'hasta'));
     }
 
@@ -42,7 +58,7 @@ class SensorLecturaController extends Controller
     }
 
     /** Guardar */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): RedirectResponse|JsonResponse
     {
         $validated = $request->validate([
             'lote_campo_id' => ['required', 'integer', Rule::exists('lotecampo', 'lote_campo_id')],
@@ -52,7 +68,16 @@ class SensorLecturaController extends Controller
             'valor_texto' => ['nullable', 'string', 'max:200'],
         ]);
 
-        SensorLectura::create($validated);
+        $lectura = SensorLectura::create($validated);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'status' => 'ok',
+                'message' => 'Lectura registrada.',
+                'data' => $lectura,
+            ], 201);
+        }
+
         return redirect()->route('campo.lecturas.index')->with('status', 'Lectura registrada.');
     }
 
@@ -65,7 +90,7 @@ class SensorLecturaController extends Controller
     }
 
     /** Actualizar */
-    public function update(Request $request, int $id): RedirectResponse
+    public function update(Request $request, int $id): RedirectResponse|JsonResponse
     {
         $lectura = SensorLectura::findOrFail($id);
         $validated = $request->validate([
@@ -76,14 +101,31 @@ class SensorLecturaController extends Controller
             'valor_texto' => ['nullable', 'string', 'max:200'],
         ]);
         $lectura->update($validated);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'status' => 'ok',
+                'message' => 'Lectura actualizada.',
+                'data' => $lectura->refresh(),
+            ]);
+        }
+
         return redirect()->route('campo.lecturas.index')->with('status', 'Lectura actualizada.');
     }
 
     /** Eliminar */
-    public function destroy(int $id): RedirectResponse
+    public function destroy(Request $request, int $id): RedirectResponse|JsonResponse
     {
         $lectura = SensorLectura::findOrFail($id);
         $lectura->delete();
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'status' => 'ok',
+                'message' => 'Lectura eliminada.',
+            ]);
+        }
+
         return redirect()->route('campo.lecturas.index')->with('status', 'Lectura eliminada.');
     }
 }

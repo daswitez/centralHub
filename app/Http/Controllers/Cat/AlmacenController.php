@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Cat;
 use App\Http\Controllers\Controller;
 use App\Models\Cat\Almacen;
 use App\Models\Cat\Municipio;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -12,7 +13,7 @@ use Illuminate\Validation\Rule;
 
 class AlmacenController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request): View|JsonResponse
     {
         $q = trim((string) $request->get('q', ''));
         $items = Almacen::query()
@@ -24,6 +25,17 @@ class AlmacenController extends Controller
             ->paginate(12)
             ->appends(['q' => $q]);
 
+        if ($request->wantsJson()) {
+            return response()->json([
+                'status' => 'ok',
+                'message' => 'Listado de almacenes obtenido correctamente.',
+                'data' => $items,
+                'filters' => [
+                    'q' => $q,
+                ],
+            ]);
+        }
+
         return view('cat.almacenes.index', ['almacenes' => $items, 'q' => $q]);
     }
 
@@ -33,7 +45,7 @@ class AlmacenController extends Controller
         return view('cat.almacenes.create', compact('municipios'));
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): RedirectResponse|JsonResponse
     {
         $validated = $request->validate([
             'codigo_almacen' => ['required', 'string', 'max:40'],
@@ -43,7 +55,16 @@ class AlmacenController extends Controller
             'lat' => ['nullable', 'numeric'],
             'lon' => ['nullable', 'numeric'],
         ]);
-        Almacen::create($validated);
+        $almacen = Almacen::create($validated);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'status' => 'ok',
+                'message' => 'Almacén creado.',
+                'data' => $almacen,
+            ], 201);
+        }
+
         return redirect()->route('cat.almacenes.index')->with('status', 'Almacén creado.');
     }
 
@@ -54,7 +75,7 @@ class AlmacenController extends Controller
         return view('cat.almacenes.edit', compact('almacen', 'municipios'));
     }
 
-    public function update(Request $request, int $id): RedirectResponse
+    public function update(Request $request, int $id): RedirectResponse|JsonResponse
     {
         $almacen = Almacen::findOrFail($id);
         $validated = $request->validate([
@@ -66,13 +87,30 @@ class AlmacenController extends Controller
             'lon' => ['nullable', 'numeric'],
         ]);
         $almacen->update($validated);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'status' => 'ok',
+                'message' => 'Almacén actualizado.',
+                'data' => $almacen->refresh(),
+            ]);
+        }
+
         return redirect()->route('cat.almacenes.index')->with('status', 'Almacén actualizado.');
     }
 
-    public function destroy(int $id): RedirectResponse
+    public function destroy(Request $request, int $id): RedirectResponse|JsonResponse
     {
         $almacen = Almacen::findOrFail($id);
         $almacen->delete();
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'status' => 'ok',
+                'message' => 'Almacén eliminado.',
+            ]);
+        }
+
         return redirect()->route('cat.almacenes.index')->with('status', 'Almacén eliminado.');
     }
 }

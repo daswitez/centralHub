@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Campo\LoteCampo;
 use App\Models\Campo\Productor;
 use App\Models\Cat\VariedadPapa;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -13,7 +14,7 @@ use Illuminate\Validation\Rule;
 
 class LoteCampoController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request): View|JsonResponse
     {
         $q = trim((string) $request->get('q', ''));
         $items = LoteCampo::query()
@@ -23,6 +24,17 @@ class LoteCampoController extends Controller
             ->orderBy('lote_campo_id', 'asc')
             ->paginate(12)
             ->appends(['q' => $q]);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'status' => 'ok',
+                'message' => 'Listado de lotes de campo obtenido correctamente.',
+                'data' => $items,
+                'filters' => [
+                    'q' => $q,
+                ],
+            ]);
+        }
 
         return view('campo.lotes.index', ['lotes' => $items, 'q' => $q]);
     }
@@ -34,7 +46,7 @@ class LoteCampoController extends Controller
         return view('campo.lotes.create', compact('productores', 'variedades'));
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): RedirectResponse|JsonResponse
     {
         $validated = $request->validate([
             'codigo_lote_campo' => ['required', 'string', 'max:50'],
@@ -45,7 +57,16 @@ class LoteCampoController extends Controller
             'fecha_cosecha' => ['nullable', 'date'],
             'humedad_suelo_pct' => ['nullable', 'numeric'],
         ]);
-        LoteCampo::create($validated);
+        $lote = LoteCampo::create($validated);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'status' => 'ok',
+                'message' => 'Lote de campo creado.',
+                'data' => $lote,
+            ], 201);
+        }
+
         return redirect()->route('campo.lotes.index')->with('status', 'Lote de campo creado.');
     }
 
@@ -57,7 +78,7 @@ class LoteCampoController extends Controller
         return view('campo.lotes.edit', compact('lote', 'productores', 'variedades'));
     }
 
-    public function update(Request $request, int $id): RedirectResponse
+    public function update(Request $request, int $id): RedirectResponse|JsonResponse
     {
         $lote = LoteCampo::findOrFail($id);
         $validated = $request->validate([
@@ -70,13 +91,30 @@ class LoteCampoController extends Controller
             'humedad_suelo_pct' => ['nullable', 'numeric'],
         ]);
         $lote->update($validated);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'status' => 'ok',
+                'message' => 'Lote de campo actualizado.',
+                'data' => $lote->refresh(),
+            ]);
+        }
+
         return redirect()->route('campo.lotes.index')->with('status', 'Lote de campo actualizado.');
     }
 
-    public function destroy(int $id): RedirectResponse
+    public function destroy(Request $request, int $id): RedirectResponse|JsonResponse
     {
         $lote = LoteCampo::findOrFail($id);
         $lote->delete();
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'status' => 'ok',
+                'message' => 'Lote de campo eliminado.',
+            ]);
+        }
+
         return redirect()->route('campo.lotes.index')->with('status', 'Lote de campo eliminado.');
     }
 }

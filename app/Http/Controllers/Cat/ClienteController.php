@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Cat;
 use App\Http\Controllers\Controller;
 use App\Models\Cat\Cliente;
 use App\Models\Cat\Municipio;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -12,7 +13,7 @@ use Illuminate\Validation\Rule;
 
 class ClienteController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request): View|JsonResponse
     {
         $q = trim((string) $request->get('q', ''));
         $clientes = Cliente::query()
@@ -25,6 +26,17 @@ class ClienteController extends Controller
             ->paginate(12)
             ->appends(['q' => $q]);
 
+        if ($request->wantsJson()) {
+            return response()->json([
+                'status' => 'ok',
+                'message' => 'Listado de clientes obtenido correctamente.',
+                'data' => $clientes,
+                'filters' => [
+                    'q' => $q,
+                ],
+            ]);
+        }
+
         return view('cat.clientes.index', compact('clientes', 'q'));
     }
 
@@ -34,7 +46,7 @@ class ClienteController extends Controller
         return view('cat.clientes.create', compact('municipios'));
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): RedirectResponse|JsonResponse
     {
         $validated = $request->validate([
             'codigo_cliente' => ['required', 'string', 'max:40'],
@@ -45,7 +57,16 @@ class ClienteController extends Controller
             'lat' => ['nullable', 'numeric'],
             'lon' => ['nullable', 'numeric'],
         ]);
-        Cliente::create($validated);
+        $cliente = Cliente::create($validated);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'status' => 'ok',
+                'message' => 'Cliente creado.',
+                'data' => $cliente,
+            ], 201);
+        }
+
         return redirect()->route('cat.clientes.index')->with('status', 'Cliente creado.');
     }
 
@@ -56,7 +77,7 @@ class ClienteController extends Controller
         return view('cat.clientes.edit', compact('cliente', 'municipios'));
     }
 
-    public function update(Request $request, int $id): RedirectResponse
+    public function update(Request $request, int $id): RedirectResponse|JsonResponse
     {
         $cliente = Cliente::findOrFail($id);
         $validated = $request->validate([
@@ -69,13 +90,30 @@ class ClienteController extends Controller
             'lon' => ['nullable', 'numeric'],
         ]);
         $cliente->update($validated);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'status' => 'ok',
+                'message' => 'Cliente actualizado.',
+                'data' => $cliente->refresh(),
+            ]);
+        }
+
         return redirect()->route('cat.clientes.index')->with('status', 'Cliente actualizado.');
     }
 
-    public function destroy(int $id): RedirectResponse
+    public function destroy(Request $request, int $id): RedirectResponse|JsonResponse
     {
         $cliente = Cliente::findOrFail($id);
         $cliente->delete();
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'status' => 'ok',
+                'message' => 'Cliente eliminado.',
+            ]);
+        }
+
         return redirect()->route('cat.clientes.index')->with('status', 'Cliente eliminado.');
     }
 }

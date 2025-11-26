@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Cat;
 use App\Http\Controllers\Controller;
 use App\Models\Cat\Municipio;
 use App\Models\Cat\Planta;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -12,7 +13,7 @@ use Illuminate\Validation\Rule;
 
 class PlantaController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request): View|JsonResponse
     {
         $q = trim((string) $request->get('q', ''));
         $plantas = Planta::query()
@@ -24,6 +25,17 @@ class PlantaController extends Controller
             ->paginate(12)
             ->appends(['q' => $q]);
 
+        if ($request->wantsJson()) {
+            return response()->json([
+                'status' => 'ok',
+                'message' => 'Listado de plantas obtenido correctamente.',
+                'data' => $plantas,
+                'filters' => [
+                    'q' => $q,
+                ],
+            ]);
+        }
+
         return view('cat.plantas.index', compact('plantas', 'q'));
     }
 
@@ -33,7 +45,7 @@ class PlantaController extends Controller
         return view('cat.plantas.create', compact('municipios'));
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): RedirectResponse|JsonResponse
     {
         $validated = $request->validate([
             'codigo_planta' => ['required', 'string', 'max:40'],
@@ -43,7 +55,16 @@ class PlantaController extends Controller
             'lat' => ['nullable', 'numeric'],
             'lon' => ['nullable', 'numeric'],
         ]);
-        Planta::create($validated);
+        $planta = Planta::create($validated);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'status' => 'ok',
+                'message' => 'Planta creada.',
+                'data' => $planta,
+            ], 201);
+        }
+
         return redirect()->route('cat.plantas.index')->with('status', 'Planta creada.');
     }
 
@@ -54,7 +75,7 @@ class PlantaController extends Controller
         return view('cat.plantas.edit', compact('planta', 'municipios'));
     }
 
-    public function update(Request $request, int $id): RedirectResponse
+    public function update(Request $request, int $id): RedirectResponse|JsonResponse
     {
         $planta = Planta::findOrFail($id);
         $validated = $request->validate([
@@ -66,13 +87,30 @@ class PlantaController extends Controller
             'lon' => ['nullable', 'numeric'],
         ]);
         $planta->update($validated);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'status' => 'ok',
+                'message' => 'Planta actualizada.',
+                'data' => $planta->refresh(),
+            ]);
+        }
+
         return redirect()->route('cat.plantas.index')->with('status', 'Planta actualizada.');
     }
 
-    public function destroy(int $id): RedirectResponse
+    public function destroy(Request $request, int $id): RedirectResponse|JsonResponse
     {
         $planta = Planta::findOrFail($id);
         $planta->delete();
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'status' => 'ok',
+                'message' => 'Planta eliminada.',
+            ]);
+        }
+
         return redirect()->route('cat.plantas.index')->with('status', 'Planta eliminada.');
     }
 }

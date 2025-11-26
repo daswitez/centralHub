@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Campo;
 use App\Http\Controllers\Controller;
 use App\Models\Campo\Productor;
 use App\Models\Cat\Municipio;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -12,7 +13,7 @@ use Illuminate\Validation\Rule;
 
 class ProductorController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request): View|JsonResponse
     {
         $q = trim((string) $request->get('q', ''));
         $items = Productor::query()
@@ -24,6 +25,17 @@ class ProductorController extends Controller
             ->paginate(12)
             ->appends(['q' => $q]);
 
+        if ($request->wantsJson()) {
+            return response()->json([
+                'status' => 'ok',
+                'message' => 'Listado de productores obtenido correctamente.',
+                'data' => $items,
+                'filters' => [
+                    'q' => $q,
+                ],
+            ]);
+        }
+
         return view('campo.productores.index', ['productores' => $items, 'q' => $q]);
     }
 
@@ -33,7 +45,7 @@ class ProductorController extends Controller
         return view('campo.productores.create', compact('municipios'));
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): RedirectResponse|JsonResponse
     {
         $validated = $request->validate([
             'codigo_productor' => ['required', 'string', 'max:40'],
@@ -41,7 +53,16 @@ class ProductorController extends Controller
             'municipio_id' => ['required', 'integer', Rule::exists('municipio', 'municipio_id')],
             'telefono' => ['nullable', 'string', 'max:40'],
         ]);
-        Productor::create($validated);
+        $productor = Productor::create($validated);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'status' => 'ok',
+                'message' => 'Productor creado.',
+                'data' => $productor,
+            ], 201);
+        }
+
         return redirect()->route('campo.productores.index')->with('status', 'Productor creado.');
     }
 
@@ -52,7 +73,7 @@ class ProductorController extends Controller
         return view('campo.productores.edit', compact('productor', 'municipios'));
     }
 
-    public function update(Request $request, int $id): RedirectResponse
+    public function update(Request $request, int $id): RedirectResponse|JsonResponse
     {
         $productor = Productor::findOrFail($id);
         $validated = $request->validate([
@@ -62,13 +83,30 @@ class ProductorController extends Controller
             'telefono' => ['nullable', 'string', 'max:40'],
         ]);
         $productor->update($validated);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'status' => 'ok',
+                'message' => 'Productor actualizado.',
+                'data' => $productor->refresh(),
+            ]);
+        }
+
         return redirect()->route('campo.productores.index')->with('status', 'Productor actualizado.');
     }
 
-    public function destroy(int $id): RedirectResponse
+    public function destroy(Request $request, int $id): RedirectResponse|JsonResponse
     {
         $productor = Productor::findOrFail($id);
         $productor->delete();
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'status' => 'ok',
+                'message' => 'Productor eliminado.',
+            ]);
+        }
+
         return redirect()->route('campo.productores.index')->with('status', 'Productor eliminado.');
     }
 }

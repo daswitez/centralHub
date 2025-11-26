@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Cat;
 
 use App\Http\Controllers\Controller;
 use App\Models\Cat\VariedadPapa;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -14,7 +15,7 @@ use Illuminate\View\View;
 class VariedadPapaController extends Controller
 {
     /** Listado paginado */
-    public function index(Request $request): View
+    public function index(Request $request): View|JsonResponse
     {
         $q = trim((string) $request->get('q', ''));
         $variedades = VariedadPapa::query()
@@ -28,6 +29,18 @@ class VariedadPapaController extends Controller
             ->paginate(12)
             ->appends(['q' => $q]);
 
+        // Para app móvil, devolvemos listado paginado en JSON
+        if ($request->wantsJson()) {
+            return response()->json([
+                'status' => 'ok',
+                'message' => 'Listado de variedades obtenido correctamente.',
+                'data' => $variedades,
+                'filters' => [
+                    'q' => $q,
+                ],
+            ]);
+        }
+
         return view('cat.variedades.index', compact('variedades', 'q'));
     }
 
@@ -38,7 +51,7 @@ class VariedadPapaController extends Controller
     }
 
     /** Guardar */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): RedirectResponse|JsonResponse
     {
         $validated = $request->validate([
             'codigo_variedad' => ['required', 'string', 'max:40'],
@@ -48,7 +61,16 @@ class VariedadPapaController extends Controller
             'ciclo_dias_max' => ['nullable', 'integer'],
         ]);
 
-        VariedadPapa::create($validated);
+        $variedad = VariedadPapa::create($validated);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'status' => 'ok',
+                'message' => 'Variedad creada.',
+                'data' => $variedad,
+            ], 201);
+        }
+
         return redirect()->route('cat.variedades.index')->with('status', 'Variedad creada.');
     }
 
@@ -60,7 +82,7 @@ class VariedadPapaController extends Controller
     }
 
     /** Actualizar */
-    public function update(Request $request, int $id): RedirectResponse
+    public function update(Request $request, int $id): RedirectResponse|JsonResponse
     {
         $variedad = VariedadPapa::findOrFail($id);
         $validated = $request->validate([
@@ -71,14 +93,31 @@ class VariedadPapaController extends Controller
             'ciclo_dias_max' => ['nullable', 'integer'],
         ]);
         $variedad->update($validated);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'status' => 'ok',
+                'message' => 'Variedad actualizada.',
+                'data' => $variedad->refresh(),
+            ]);
+        }
+
         return redirect()->route('cat.variedades.index')->with('status', 'Variedad actualizada.');
     }
 
     /** Eliminar */
-    public function destroy(int $id): RedirectResponse
+    public function destroy(Request $request, int $id): RedirectResponse|JsonResponse
     {
         $variedad = VariedadPapa::findOrFail($id);
         $variedad->delete();
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'status' => 'ok',
+                'message' => 'Variedad eliminada.',
+            ]);
+        }
+
         return redirect()->route('cat.variedades.index')->with('status', 'Variedad eliminada.');
     }
 }

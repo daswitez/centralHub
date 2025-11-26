@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Cat;
 use App\Http\Controllers\Controller;
 use App\Models\Cat\Departamento;
 use App\Models\Cat\Municipio;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -16,7 +17,7 @@ use Illuminate\Validation\Rule;
 class MunicipioController extends Controller
 {
     /** Listado paginado con filtro por departamento */
-    public function index(Request $request): View
+    public function index(Request $request): View|JsonResponse
     {
         $q = trim((string) $request->get('q', ''));
         $departamentoId = (int) $request->get('departamento_id', 0);
@@ -30,6 +31,19 @@ class MunicipioController extends Controller
 
         $departamentos = Departamento::orderBy('nombre')->get();
 
+        // Si se pide JSON (app móvil), devolvemos listado y metadatos de filtro
+        if ($request->wantsJson()) {
+            return response()->json([
+                'status' => 'ok',
+                'message' => 'Listado de municipios obtenido correctamente.',
+                'data' => $municipios,
+                'filters' => [
+                    'q' => $q,
+                    'departamento_id' => $departamentoId,
+                ],
+            ]);
+        }
+
         return view('cat.municipios.index', compact('municipios', 'q', 'departamentoId', 'departamentos'));
     }
 
@@ -41,14 +55,23 @@ class MunicipioController extends Controller
     }
 
     /** Guardar */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): RedirectResponse|JsonResponse
     {
         $validated = $request->validate([
             'departamento_id' => ['required', 'integer', Rule::exists('departamento', 'departamento_id')],
             'nombre' => ['required', 'string', 'max:120'],
         ]);
 
-        Municipio::create($validated);
+        $municipio = Municipio::create($validated);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'status' => 'ok',
+                'message' => 'Municipio creado.',
+                'data' => $municipio,
+            ], 201);
+        }
+
         return redirect()->route('cat.municipios.index')->with('status', 'Municipio creado.');
     }
 
@@ -61,7 +84,7 @@ class MunicipioController extends Controller
     }
 
     /** Actualizar */
-    public function update(Request $request, int $id): RedirectResponse
+    public function update(Request $request, int $id): RedirectResponse|JsonResponse
     {
         $municipio = Municipio::findOrFail($id);
         $validated = $request->validate([
@@ -69,14 +92,31 @@ class MunicipioController extends Controller
             'nombre' => ['required', 'string', 'max:120'],
         ]);
         $municipio->update($validated);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'status' => 'ok',
+                'message' => 'Municipio actualizado.',
+                'data' => $municipio->refresh(),
+            ]);
+        }
+
         return redirect()->route('cat.municipios.index')->with('status', 'Municipio actualizado.');
     }
 
     /** Eliminar */
-    public function destroy(int $id): RedirectResponse
+    public function destroy(Request $request, int $id): RedirectResponse|JsonResponse
     {
         $municipio = Municipio::findOrFail($id);
         $municipio->delete();
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'status' => 'ok',
+                'message' => 'Municipio eliminado.',
+            ]);
+        }
+
         return redirect()->route('cat.municipios.index')->with('status', 'Municipio eliminado.');
     }
 }
