@@ -21,9 +21,41 @@ class TransaccionPlantaController extends Controller
     public function showLotePlantaForm(): View
     {
         $plantas = PlantaCat::orderBy('nombre')->get();
-        $lotesCampo = LoteCampo::orderBy('codigo_lote_campo')->get();
+        
+        // Obtener lotes de campo con información detallada
+        $lotesCampo = DB::select('
+            SELECT lc.lote_campo_id, lc.codigo_lote_campo, lc.superficie_ha,
+                   pr.nombre as productor_nombre,
+                   v.nombre_comercial as variedad_nombre, v.codigo_variedad,
+                   coalesce(sum(lpe.peso_entrada_t), 0) as peso_usado_t
+            FROM campo.lotecampo lc
+            LEFT JOIN campo.productor pr ON pr.productor_id = lc.productor_id
+            LEFT JOIN cat.variedadpapa v ON v.variedad_id = lc.variedad_id
+            LEFT JOIN planta.loteplanta_entradacampo lpe ON lpe.lote_campo_id = lc.lote_campo_id
+            GROUP BY lc.lote_campo_id, lc.codigo_lote_campo, lc.superficie_ha,
+                     pr.nombre, v.nombre_comercial, v.codigo_variedad
+            ORDER BY lc.codigo_lote_campo DESC
+        ');
+        
+        // Calcular rendimiento promedio histórico de cada planta
+        $rendimientosPlanta = DB::select('
+            SELECT planta_id, 
+                   round(avg(rendimiento_pct), 1) as rendimiento_promedio,
+                   count(*) as num_lotes
+            FROM planta.loteplanta
+            WHERE rendimiento_pct IS NOT NULL
+            GROUP BY planta_id
+        ');
+        
+        $rendimientos = [];
+        foreach ($rendimientosPlanta as $r) {
+            $rendimientos[$r->planta_id] = [
+                'promedio' => $r->rendimiento_promedio,
+                'num_lotes' => $r->num_lotes
+            ];
+        }
 
-        return view('tx.planta.lote_planta', compact('plantas', 'lotesCampo'));
+        return view('tx.planta.lote_planta', compact('plantas', 'lotesCampo', 'rendimientos'));
     }
 
     /**
