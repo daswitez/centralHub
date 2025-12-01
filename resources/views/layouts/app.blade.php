@@ -22,6 +22,21 @@
                         <a href="{{ url('/') }}" class="nav-link">Inicio</a>
                     </li>
                 </ul>
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link" data-toggle="dropdown" href="#">
+                            <i class="far fa-user mr-1"></i> {{ Auth::user()->name }}
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right">
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit" class="dropdown-item">
+                                    <i class="fas fa-sign-out-alt mr-2"></i> Cerrar Sesión
+                                </button>
+                            </form>
+                        </div>
+                    </li>
+                </ul>
             </nav>
 
             {{-- Sidebar izquierdo --}}
@@ -64,12 +79,6 @@
                                     <p>Certificaciones</p>
                                 </a>
                             </li>
-                            <li class="nav-item">
-                                <a href="{{ url('/') }}" class="nav-link">
-                                    <i class="nav-icon fas fa-tachometer-alt"></i>
-                                    <p>Dashboard</p>
-                                </a>
-                            </li>
                             <li class="nav-item has-treeview">
                                 <a href="#" class="nav-link">
                                     <i class="nav-icon fas fa-database"></i>
@@ -103,6 +112,16 @@
                                 </a>
                                 <ul class="nav nav-treeview">
                                     <li class="nav-item">
+                                        <a class="nav-link" href="{{ route('tx.planta.lotes-planta.index') }}">
+                                            <p>Ver Lotes de Planta</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{{ route('tx.planta.lotes-salida.index') }}">
+                                            <p>Ver Lotes de Salida</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
                                         <a class="nav-link" href="{{ route('tx.planta.lote-planta.form') }}">
                                             <p>Planta - Registrar lote planta</p>
                                         </a>
@@ -125,6 +144,24 @@
                                     <li class="nav-item">
                                         <a class="nav-link" href="{{ route('tx.almacen.despachar-al-cliente.form') }}">
                                             <p>Almacén - Despachar a cliente</p>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li class="nav-item has-treeview">
+                                <a href="#" class="nav-link">
+                                    <i class="nav-icon fas fa-shopping-cart"></i>
+                                    <p>Comercial <i class="right fas fa-angle-left"></i></p>
+                                </a>
+                                <ul class="nav nav-treeview">
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{{ route('comercial.pedidos.index') }}">
+                                            <p>Pedidos / Ventas</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{{ route('comercial.pedidos.create') }}">
+                                            <p>Nuevo Pedido</p>
                                         </a>
                                     </li>
                                 </ul>
