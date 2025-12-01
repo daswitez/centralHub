@@ -15,8 +15,48 @@ use Illuminate\View\View;
 class TransaccionPlantaController extends Controller
 {
     /**
+     * Listado de lotes de planta
+     */
+    public function indexLotesPlanta(): View
+    {
+        $lotes = DB::select('
+            SELECT lp.lote_planta_id, lp.codigo_lote_planta, lp.fecha_inicio, 
+                   lp.rendimiento_pct,
+                   p.nombre as planta_nombre, p.codigo_planta,
+                   count(distinct lpe.lote_campo_id) as total_lotes_campo,
+                   sum(lpe.peso_entrada_t) as peso_total_entrada
+            FROM planta.loteplanta lp
+            LEFT JOIN cat.planta p ON p.planta_id = lp.planta_id
+            LEFT JOIN planta.loteplanta_entradacampo lpe ON lpe.lote_planta_id = lp.lote_planta_id
+            GROUP BY lp.lote_planta_id, lp.codigo_lote_planta, lp.fecha_inicio, 
+                     lp.rendimiento_pct, p.nombre, p.codigo_planta
+            ORDER BY lp.fecha_inicio DESC
+        ');
+        
+        return view('tx.planta.lotes_planta_index', compact('lotes'));
+    }
+
+    /**
+     * Listado de lotes de salida
+     */
+    public function indexLotesSalida(): View
+    {
+        $lotes = DB::select('
+            SELECT ls.lote_salida_id, ls.codigo_lote_salida, ls.fecha_empaque,
+                   ls.sku, ls.peso_t,
+                   lp.codigo_lote_planta,
+                   p.nombre as planta_nombre
+            FROM planta.lotesalida ls
+            LEFT JOIN planta.loteplanta lp ON lp.lote_planta_id = ls.lote_planta_id
+            LEFT JOIN cat.planta p ON p.planta_id = lp.planta_id
+            ORDER BY ls.fecha_empaque DESC
+        ');
+        
+        return view('tx.planta.lotes_salida_index', compact('lotes'));
+    }
+
+    /**
      * Muestra el formulario web para registrar un lote de planta
-     * usando la función planta.sp_registrar_lote_planta.
      */
     public function showLotePlantaForm(): View
     {
@@ -59,13 +99,13 @@ class TransaccionPlantaController extends Controller
     }
 
     /**
-     * Ejecuta planta.sp_registrar_lote_planta desde formulario web.
+     * Ejecuta planta.sp_registrar_lote_planta
      */
     public function registrarLotePlanta(Request $request): RedirectResponse|JsonResponse
     {
         $validated = $request->validate([
             'codigo_lote_planta' => ['required', 'string', 'max:50'],
-            'planta_id' => ['required', 'integer', Rule::exists('planta', 'planta_id')], // cat.planta vía search_path
+            'planta_id' => ['required', 'integer', Rule::exists('planta', 'planta_id')],
             'fecha_inicio' => ['required', 'date'],
             'entradas' => ['required', 'array', 'min:1'],
             'entradas.*.lote_campo_id' => ['required', 'integer', Rule::exists('lotecampo', 'lote_campo_id')],
@@ -103,7 +143,6 @@ class TransaccionPlantaController extends Controller
 
     /**
      * Muestra el formulario web para registrar lote de salida
-     * y opcionalmente crear un envío con planta.sp_registrar_lote_salida_y_envio.
      */
     public function showLoteSalidaEnvioForm(): View
     {
@@ -117,7 +156,7 @@ class TransaccionPlantaController extends Controller
     }
 
     /**
-     * Ejecuta planta.sp_registrar_lote_salida_y_envio desde formulario web o JSON.
+     * Ejecuta planta.sp_registrar_lote_salida_y_envio
      */
     public function registrarLoteSalidaEnvio(Request $request): RedirectResponse|JsonResponse
     {
@@ -183,5 +222,3 @@ class TransaccionPlantaController extends Controller
             );
     }
 }
-
-

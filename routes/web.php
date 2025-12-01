@@ -15,6 +15,7 @@ use App\Http\Controllers\Planta\TransaccionPlantaController;
 use App\Http\Controllers\Almacen\TransaccionAlmacenController;
 use App\Http\Controllers\Panel\DashboardController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Comercial\PedidoController;
 
 // Rutas de autenticación (públicas)
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
@@ -46,6 +47,11 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('lotes', LoteCampoController::class)->except(['show']);
         Route::resource('lecturas', SensorLecturaController::class)->except(['show']);
     });
+    
+    // Rutas para comercial/ventas
+    Route::prefix('comercial')->name('comercial.')->group(function () {
+        Route::resource('pedidos', PedidoController::class)->only(['index', 'create', 'store']);
+    });
 
     // Paneles (dashboards)
     Route::prefix('panel')->name('panel.')->group(function () {
@@ -65,6 +71,11 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('tx')->name('tx.')->group(function () {
         // Planta
         Route::prefix('planta')->name('planta.')->group(function () {
+            Route::get('lotes-planta', [TransaccionPlantaController::class, 'indexLotesPlanta'])
+                ->name('lotes-planta.index');
+            Route::get('lotes-salida', [TransaccionPlantaController::class, 'indexLotesSalida'])
+                ->name('lotes-salida.index');
+                
             Route::get('lote-planta', [TransaccionPlantaController::class, 'showLotePlantaForm'])
                 ->name('lote-planta.form');
             Route::post('lote-planta', [TransaccionPlantaController::class, 'registrarLotePlanta'])
