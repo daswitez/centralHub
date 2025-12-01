@@ -22,9 +22,26 @@ class ClienteController extends Controller
                     ->orWhere('nombre', 'ilike', "%{$q}%")
                     ->orWhere('tipo', 'ilike', "%{$q}%");
             })
-            ->orderBy('cliente_id', 'asc')
+            ->orderBy('cliente_id', 'desc')
             ->paginate(12)
             ->appends(['q' => $q]);
+
+        // Agregar estadísticas de pedidos para cada cliente
+        foreach ($clientes as $cliente) {
+            $stats = \DB::selectOne('
+                SELECT 
+                    count(distinct p.pedido_id) as total_pedidos,
+                    count(distinct p.pedido_id) FILTER (WHERE p.estado = \'COMPLETADO\') as pedidos_completados,
+                    coalesce(sum(pd.cantidad_t * pd.precio_unit_usd), 0) as monto_total
+                FROM comercial.pedido p
+                LEFT JOIN comercial.pedidodetalle pd ON pd.pedido_id = p.pedido_id
+                WHERE p.cliente_id = ?
+            ', [$cliente->cliente_id]);
+            
+            $cliente->total_pedidos = (int)($stats->total_pedidos ?? 0);
+            $cliente->pedidos_completados = (int)($stats->pedidos_completados ?? 0);
+            $cliente->monto_total = (float)($stats->monto_total ?? 0);
+        }
 
         if ($request->wantsJson()) {
             return response()->json([

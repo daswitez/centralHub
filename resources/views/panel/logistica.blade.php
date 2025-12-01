@@ -16,6 +16,36 @@
 @endsection
 
 @section('content')
+    <div class="row">
+        <div class="col-12 col-sm-6 col-md-4">
+            <div class="info-box">
+                <span class="info-box-icon bg-warning"><i class="fas fa-truck-moving"></i></span>
+                <div class="info-box-content">
+                    <span class="info-box-text">Envíos en ruta</span>
+                    <span class="info-box-number">{{ number_format($kpi_envios_en_ruta) }}</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-md-4">
+            <div class="info-box">
+                <span class="info-box-icon bg-success"><i class="fas fa-check-circle"></i></span>
+                <div class="info-box-content">
+                    <span class="info-box-text">Completados este mes</span>
+                    <span class="info-box-number">{{ number_format($kpi_envios_completados) }}</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-md-4">
+            <div class="info-box">
+                <span class="info-box-icon bg-info"><i class="fas fa-weight"></i></span>
+                <div class="info-box-content">
+                    <span class="info-box-text">Tonelaje en tránsito</span>
+                    <span class="info-box-number">{{ number_format($kpi_tonelaje_transito, 2) }} t</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="card card-outline card-dark">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h3 class="card-title mb-0">
@@ -29,8 +59,12 @@
                     <thead class="thead-dark">
                     <tr>
                         <th>Código</th>
+                        <th>Transportista</th>
+                        <th>Ruta</th>
                         <th>Salida</th>
                         <th>Llegada</th>
+                        <th>Lotes</th>
+                        <th>Tonelaje</th>
                         <th>Estado</th>
                     </tr>
                     </thead>
@@ -38,12 +72,16 @@
                     @forelse ($envios as $e)
                         <tr>
                             <td class="font-weight-bold">{{ $e->codigo_envio }}</td>
-                            <td>{{ $e->fecha_salida }}</td>
-                            <td>{{ $e->fecha_llegada ?? '—' }}</td>
+                            <td>{{ $e->transportista ?? '—' }}</td>
+                            <td>{{ $e->ruta ?? '—' }}</td>
+                            <td>{{ $e->fecha_salida ? \Carbon\Carbon::parse($e->fecha_salida)->format('d/m/Y') : '—' }}</td>
+                            <td>{{ $e->fecha_llegada ? \Carbon\Carbon::parse($e->fecha_llegada)->format('d/m/Y') : '—' }}</td>
+                            <td>{{ $e->num_lotes }}</td>
+                            <td>{{ number_format($e->total_ton ?? 0, 2) }} t</td>
                             <td><span class="badge badge-{{ $e->estado === 'ENTREGADO' ? 'success' : ($e->estado === 'EN_RUTA' ? 'warning' : 'secondary') }}">{{ $e->estado }}</span></td>
                         </tr>
                     @empty
-                        <tr><td colspan="4" class="text-center text-muted">Sin datos</td></tr>
+                        <tr><td colspan="8" class="text-center text-muted">Sin datos</td></tr>
                     @endforelse
                     </tbody>
                 </table>
@@ -51,5 +89,3 @@
         </div>
     </div>
 @endsection
-
-

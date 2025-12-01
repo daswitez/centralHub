@@ -18,12 +18,25 @@ class LoteCampoController extends Controller
     {
         $q = trim((string) $request->get('q', ''));
         $items = LoteCampo::query()
+            ->with(['productor', 'variedad'])
+            ->withCount('lecturas')
             ->when($q !== '', function ($b) use ($q) {
                 $b->where('codigo_lote_campo', 'ilike', "%{$q}%");
             })
-            ->orderBy('lote_campo_id', 'asc')
+            ->orderBy('lote_campo_id', 'desc')
             ->paginate(12)
             ->appends(['q' => $q]);
+
+        // Agregar información de trazabilidad (si fue procesado en planta)
+        foreach ($items as $lote) {
+            $procesado = \DB::selectOne('
+                SELECT count(*) as c 
+                FROM planta.loteplanta_entradacampo 
+                WHERE lote_campo_id = ?
+            ', [$lote->lote_campo_id]);
+            $lote->procesado_en_planta = ($procesado->c ?? 0) > 0;
+            $lote->num_lotes_planta = (int)($procesado->c ?? 0);
+        }
 
         if ($request->wantsJson()) {
             return response()->json([

@@ -30,6 +30,8 @@
                                 <th>Nombre</th>
                                 <th>Tipo</th>
                                 <th>Municipio</th>
+                                <th class="text-center">Pedidos</th>
+                                <th class="text-right">Monto Total</th>
                                 <th style="width: 10rem;">Acciones</th>
                             </tr>
                             </thead>
@@ -38,9 +40,25 @@
                                 <tr>
                                     <td>{{ $c->cliente_id }}</td>
                                     <td>{{ $c->codigo_cliente }}</td>
-                                    <td>{{ $c->nombre }}</td>
-                                    <td>{{ $c->tipo }}</td>
-                                    <td>{{ $c->municipio?->nombre }}</td>
+                                    <td class="font-weight-bold">{{ $c->nombre }}</td>
+                                    <td><span class="badge badge-secondary">{{ $c->tipo }}</span></td>
+                                    <td>{{ $c->municipio?->nombre ?? '—' }}</td>
+                                    <td class="text-center">
+                                        @if($c->total_pedidos > 0)
+                                            <span class="badge badge-primary" title="{{ $c->pedidos_completados }} completados">
+                                                <i class="fas fa-shopping-cart"></i> {{ $c->total_pedidos }}
+                                            </span>
+                                        @else
+                                            <span class="text-muted">—</span>
+                                        @endif
+                                    </td>
+                                    <td class="text-right">
+                                        @if($c->monto_total > 0)
+                                            <strong>$ {{ number_format($c->monto_total, 2) }}</strong>
+                                        @else
+                                            <span class="text-muted">$ 0.00</span>
+                                        @endif
+                                    </td>
                                     <td>
                                         <a href="{{ route('cat.clientes.edit', $c->cliente_id) }}" class="btn btn-sm btn-outline-dark">
                                             <i class="fas fa-edit"></i>
@@ -56,7 +74,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="text-center text-muted">Sin resultados</td>
+                                    <td colspan="8" class="text-center text-muted">Sin resultados</td>
                                 </tr>
                             @endforelse
                             </tbody>

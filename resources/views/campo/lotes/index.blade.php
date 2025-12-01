@@ -31,6 +31,8 @@
                                 <th>Variedad</th>
                                 <th>Superficie (ha)</th>
                                 <th>Siembra</th>
+                                <th class="text-center">Sensores</th>
+                                <th class="text-center">Trazabilidad</th>
                                 <th style="width: 10rem;">Acciones</th>
                             </tr>
                             </thead>
@@ -38,11 +40,31 @@
                             @forelse ($lotes as $l)
                                 <tr>
                                     <td>{{ $l->lote_campo_id }}</td>
-                                    <td>{{ $l->codigo_lote_campo }}</td>
-                                    <td>{{ $l->productor?->nombre }}</td>
-                                    <td>{{ $l->variedad?->nombre_comercial }}</td>
+                                    <td class="font-weight-bold">{{ $l->codigo_lote_campo }}</td>
+                                    <td>{{ $l->productor?->nombre ?? '—' }}</td>
+                                    <td>{{ $l->variedad?->nombre_comercial ?? '—' }}</td>
                                     <td>{{ $l->superficie_ha }}</td>
-                                    <td>{{ $l->fecha_siembra }}</td>
+                                    <td>{{ $l->fecha_siembra ? \Carbon\Carbon::parse($l->fecha_siembra)->format('d/m/Y') : '—' }}</td>
+                                    <td class="text-center">
+                                        @if($l->lecturas_count > 0)
+                                            <span class="badge badge-success" title="Lecturas de sensores">
+                                                <i class="fas fa-microchip"></i> {{ $l->lecturas_count }}
+                                            </span>
+                                        @else
+                                            <span class="text-muted">—</span>
+                                        @endif
+                                    </td>
+                                    <td class="text-center">
+                                        @if($l->procesado_en_planta)
+                                            <span class="badge badge-info" title="Procesado en planta">
+                                                <i class="fas fa-industry"></i> {{ $l->num_lotes_planta }} lote(s)
+                                            </span>
+                                        @else
+                                            <span class="badge badge-secondary">
+                                                <i class="fas fa-seedling"></i> En campo
+                                            </span>
+                                        @endif
+                                    </td>
                                     <td>
                                         <a href="{{ route('campo.lotes.edit', $l->lote_campo_id) }}" class="btn btn-sm btn-outline-dark">
                                             <i class="fas fa-edit"></i>
@@ -58,7 +80,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" class="text-center text-muted">Sin resultados</td>
+                                    <td colspan="9" class="text-center text-muted">Sin resultados</td>
                                 </tr>
                             @endforelse
                             </tbody>
@@ -72,5 +94,3 @@
         </div>
     </div>
 @endsection
-
-
