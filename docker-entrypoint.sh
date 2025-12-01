@@ -23,8 +23,8 @@ chmod -R 777 storage bootstrap/cache
 echo "🗄️ Ejecutando migraciones..."
 php artisan migrate --force || true
 
-# echo "🌱 Ejecutando Seeder..."
-# php artisan db:seed --force || true
+echo "🌱 Ejecutando Seeder..."
+php artisan db:seed --force || true
 
 if [ ! -f public/build/manifest.json ]; then
     echo "🎨 Compilando Vite (npm run build)..."
