@@ -46,6 +46,11 @@ Route::prefix('panel')->name('panel.')->group(function () {
     Route::get('/certificaciones', [DashboardController::class, 'certificaciones'])->name('certificaciones');
 });
 
+// API endpoints for transactions
+Route::prefix('api')->group(function () {
+    Route::get('/envios/buscar/{codigo}', [App\Http\Controllers\Almacen\TransaccionAlmacenController::class, 'buscarEnvio']);
+});
+
 // Transacciones de negocio (SPs en PostgreSQL)
 Route::prefix('tx')->name('tx.')->group(function () {
     // Planta
