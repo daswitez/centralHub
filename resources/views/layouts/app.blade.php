@@ -22,6 +22,21 @@
                         <a href="{{ url('/') }}" class="nav-link">Inicio</a>
                     </li>
                 </ul>
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link" data-toggle="dropdown" href="#">
+                            <i class="far fa-user mr-1"></i> {{ Auth::user()->name }}
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right">
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit" class="dropdown-item">
+                                    <i class="fas fa-sign-out-alt mr-2"></i> Cerrar Sesión
+                                </button>
+                            </form>
+                        </div>
+                    </li>
+                </ul>
             </nav>
 
             {{-- Sidebar izquierdo --}}
@@ -62,12 +77,6 @@
                                 <a href="{{ route('panel.certificaciones') }}" class="nav-link">
                                     <i class="nav-icon fas fa-certificate"></i>
                                     <p>Certificaciones</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ url('/') }}" class="nav-link">
-                                    <i class="nav-icon fas fa-tachometer-alt"></i>
-                                    <p>Dashboard</p>
                                 </a>
                             </li>
                             <li class="nav-item has-treeview">
