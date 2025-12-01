@@ -146,9 +146,19 @@ class TransaccionPlantaController extends Controller
      */
     public function showLoteSalidaEnvioForm(): View
     {
-        $lotesPlanta = DB::table('planta.loteplanta')
-            ->orderByDesc('lote_planta_id')
-            ->get();
+        // Cargar lotes de planta con información adicional
+        $lotesPlanta = DB::select('
+            SELECT lp.lote_planta_id, lp.codigo_lote_planta, lp.fecha_inicio, lp.rendimiento_pct,
+                   p.nombre as planta_nombre,
+                   count(lpe.lote_campo_id) as total_lotes_campo,
+                   sum(lpe.peso_entrada_t) as peso_entrada_total
+            FROM planta.loteplanta lp
+            LEFT JOIN cat.planta p ON p.planta_id = lp.planta_id
+            LEFT JOIN planta.loteplanta_entradacampo lpe ON lpe.lote_planta_id = lp.lote_planta_id
+            GROUP BY lp.lote_planta_id, lp.codigo_lote_planta, lp.fecha_inicio, lp.rendimiento_pct, p.nombre
+            ORDER BY lp.fecha_inicio DESC
+        ');
+        
         $rutas = DB::table('logistica.ruta')->orderBy('codigo_ruta')->get();
         $transportistas = DB::table('cat.transportista')->orderBy('nombre')->get();
 

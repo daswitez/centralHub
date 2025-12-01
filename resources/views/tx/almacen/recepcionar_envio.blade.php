@@ -24,26 +24,27 @@
                 <form method="post" action="{{ route('tx.almacen.recepcionar-envio.store') }}" id="formRecepcionar">
                     @csrf
                     <div class="card-body">
-                        {{-- Paso 1: Buscar envío --}}
+                        {{-- Paso 1: Seleccionar envío --}}
                         <div class="form-group">
-                            <label for="codigo_envio">Código envío</label>
-                            <div class="input-group">
-                                <input
-                                    id="codigo_envio"
-                                    name="codigo_envio"
-                                    class="form-control"
-                                    maxlength="40"
-                                    required
-                                    value="{{ old('codigo_envio') }}"
-                                    placeholder="ENV-..."
-                                >
-                                <div class="input-group-append">
-                                    <button type="button" class="btn btn-dark" id="btnBuscarEnvio">
-                                        <i class="fas fa-search"></i> Buscar
-                                    </button>
-                                </div>
-                            </div>
-                            <small class="text-muted">Ingrese el código del envío a recepcionar</small>
+                            <label for="codigo_envio">Seleccionar Envío *</label>
+                            <select 
+                                id="codigo_envio"
+                                name="codigo_envio"
+                                class="form-control"
+                                required
+                            >
+                                <option value="">Seleccione un envío...</option>
+                                @foreach($envios as $envio)
+                                    <option value="{{ $envio->codigo_envio }}" 
+                                            data-envio='@json($envio)'>
+                                        {{ $envio->codigo_envio }} - 
+                                        {{ $envio->ruta_descripcion ?? $envio->codigo_ruta ?? 'Sin ruta' }} 
+                                        ({{ number_format($envio->peso_total, 2) }} t) - 
+                                        {{ ucfirst(strtolower($envio->estado)) }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <small class="text-muted">Seleccione el envío a recepcionar de la lista</small>
                         </div>
 
                         {{-- Panel de información del envío (se muestra después de buscar) --}}
@@ -202,29 +203,32 @@
 
     <script>
         (function() {
-            const btnBuscar = document.getElementById('btnBuscarEnvio');
-            const codigoEnvioInput = document.getElementById('codigo_envio');
+            const codigoEnvioSelect = document.getElementById('codigo_envio');
             const envioInfoPanel = document.getElementById('envioInfo');
             const btnConfirmar = document.getElementById('btnConfirmar');
 
-            if (!btnBuscar || !codigoEnvioInput) return;
+            if (!codigoEnvioSelect) return;
 
-            btnBuscar.addEventListener('click', async () => {
-                const codigo = codigoEnvioInput.value.trim();
-                if (!codigo) {
-                    alert('Ingrese un código de envío');
+            // Cuando se selecciona un envío del dropdown
+            codigoEnvioSelect.addEventListener('change', async function() {
+                const selectedOption = this.options[this.selectedIndex];
+                
+                if (!this.value) {
+                    // Si se deselecciona, ocultar panel
+                    envioInfoPanel.style.display = 'none';
+                    btnConfirmar.disabled = true;
                     return;
                 }
 
-                btnBuscar.disabled = true;
-                btnBuscar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Buscando...';
-
+                // Obtener datos del envío desde el atributo data
+                const envioData = JSON.parse(selectedOption.getAttribute('data-envio'));
+                
+                // Buscar información completa del envío via API
                 try {
-                    // Buscar información del envío
-                    const response = await fetch(`/api/envios/buscar/${encodeURIComponent(codigo)}`);
+                    const response = await fetch(`/api/envios/buscar/${encodeURIComponent(this.value)}`);
                     
                     if (!response.ok) {
-                        throw new Error('Envío no encontrado');
+                        throw new Error('No se pudo cargar la información del envío');
                     }
 
                     const data = await response.json();
@@ -232,10 +236,10 @@
                     btnConfirmar.disabled = false;
 
                 } catch (error) {
-                    alert('Error: ' + error.message + '\n\nVerifique que el código sea correcto.');
-                } finally {
-                    btnBuscar.disabled = false;
-                    btnBuscar.innerHTML = '<i class="fas fa-search"></i> Buscar';
+                    alert('Error: ' + error.message);
+                    this.value = '';
+                    envioInfoPanel.style.display = 'none';
+                    btnConfirmar.disabled = true;
                 }
             });
 

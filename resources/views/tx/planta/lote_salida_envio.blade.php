@@ -38,18 +38,22 @@
                             >
                         </div>
                         <div class="form-group">
-                            <label for="lote_planta_id">Lote planta origen</label>
+                            <label for="lote_planta_id">Lote planta origen *</label>
                             <select id="lote_planta_id" name="lote_planta_id" class="form-control" required>
-                                <option value="">Seleccione...</option>
+                                <option value="">Seleccione un lote de planta...</option>
                                 @foreach($lotesPlanta as $lp)
                                     <option
                                         value="{{ $lp->lote_planta_id }}"
                                         {{ (int) old('lote_planta_id') === $lp->lote_planta_id ? 'selected' : '' }}
                                     >
-                                        {{ $lp->codigo_lote_planta }} (ID {{ $lp->lote_planta_id }})
+                                        {{ $lp->codigo_lote_planta }} - 
+                                        {{ $lp->planta_nombre }} 
+                                        ({{ $lp->total_lotes_campo }} lotes campo, {{ number_format($lp->peso_entrada_total, 2) }} t) - 
+                                        {{ \Carbon\Carbon::parse($lp->fecha_inicio)->format('d/m/Y') }}
                                     </option>
                                 @endforeach
                             </select>
+                            <small class="text-muted">Seleccione el lote de planta del cual saldrá el producto empacado</small>
                         </div>
                         <div class="form-group">
                             <label for="sku">SKU</label>

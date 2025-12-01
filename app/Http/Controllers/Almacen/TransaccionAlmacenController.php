@@ -77,8 +77,25 @@ class TransaccionAlmacenController extends Controller
     public function showRecepcionarEnvioForm(): View
     {
         $almacenes = Almacen::orderBy('nombre')->get();
+        
+        // Cargar envíos disponibles para recepción (pendientes o en ruta)
+        $envios = DB::select("
+            SELECT e.envio_id, e.codigo_envio, e.fecha_salida, e.estado,
+                   t.nombre as transportista_nombre,
+                   r.codigo_ruta, r.descripcion as ruta_descripcion,
+                   count(ed.envio_detalle_id) as total_items,
+                   sum(ed.cantidad_t) as peso_total
+            FROM logistica.envio e
+            LEFT JOIN cat.transportista t ON t.transportista_id = e.transportista_id
+            LEFT JOIN logistica.ruta r ON r.ruta_id = e.ruta_id
+            LEFT JOIN logistica.enviodetalle ed ON ed.envio_id = e.envio_id
+            WHERE e.estado IN ('PENDIENTE', 'EN_RUTA')
+            GROUP BY e.envio_id, e.codigo_envio, e.fecha_salida, e.estado,
+                     t.nombre, r.codigo_ruta, r.descripcion
+            ORDER BY e.fecha_salida DESC
+        ");
 
-        return view('tx.almacen.recepcionar_envio', compact('almacenes'));
+        return view('tx.almacen.recepcionar_envio', compact('almacenes', 'envios'));
     }
 
     /**
