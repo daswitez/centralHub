@@ -166,6 +166,39 @@
                                     </li>
                                 </ul>
                             </li>
+
+                            {{-- Menú de Solicitudes --}}
+                            <li class="nav-item has-treeview">
+                                <a href="#" class="nav-link">
+                                    <i class="nav-icon fas fa-file-invoice"></i>
+                                    <p>Solicitudes <i class="right fas fa-angle-left"></i></p>
+                                </a>
+                                <ul class="nav nav-treeview">
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{{ route('solicitudes.index') }}">
+                                            <p>Mis Solicitudes (Planta)</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{{ route('solicitudes.create') }}">
+                                            <p>Nueva Solicitud</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{{ route('solicitudes.mis-solicitudes') }}">
+                                            <p>Solicitudes Recibidas (Productor)</p>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+
+                            {{-- Menú de Trazabilidad --}}
+                            <li class="nav-item">
+                                <a href="{{ route('trazabilidad.index') }}" class="nav-link">
+                                    <i class="nav-icon fas fa-project-diagram"></i>
+                                    <p>Trazabilidad</p>
+                                </a>
+                            </li>
                         </ul>
                     </nav>
                 </div>

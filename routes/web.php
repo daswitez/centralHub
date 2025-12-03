@@ -16,6 +16,8 @@ use App\Http\Controllers\Almacen\TransaccionAlmacenController;
 use App\Http\Controllers\Panel\DashboardController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Comercial\PedidoController;
+use App\Http\Controllers\Campo\SolicitudProduccionController;
+use App\Http\Controllers\TrazabilidadController;
 
 // Rutas de autenticación (públicas)
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
@@ -104,6 +106,33 @@ Route::middleware(['auth'])->group(function () {
             Route::post('despachar-al-cliente', [TransaccionAlmacenController::class, 'despacharCliente'])
                 ->name('despachar-al-cliente.store');
         });
+    });
+
+    // Solicitudes de Producción
+    Route::prefix('solicitudes')->name('solicitudes.')->group(function () {
+        Route::get('/', [SolicitudProduccionController::class, 'index'])
+            ->name('index');
+        Route::get('/crear', [SolicitudProduccionController::class, 'create'])
+            ->name('create');
+        Route::post('/', [SolicitudProduccionController::class, 'store'])
+            ->name('store');
+        Route::get('/mis-solicitudes', [SolicitudProduccionController::class, 'misSolicitudes'])
+            ->name('mis-solicitudes');
+        Route::get('/{id}', [SolicitudProduccionController::class, 'show'])
+            ->name('show');
+        Route::post('/{id}/responder', [SolicitudProduccionController::class, 'responder'])
+            ->name('responder');
+    });
+
+    // Trazabilidad
+    Route::prefix('trazabilidad')->name('trazabilidad.')->group(function () {
+        Route::get('/', [TrazabilidadController::class, 'index'])
+            ->name('index');
+    });
+
+    // API para trazabilidad
+    Route::prefix('api')->group(function () {
+        Route::get('/trazabilidad/{tipo}/{codigo}', [TrazabilidadController::class, 'getDatosCompletos']);
     });
     
     // Dashboard alias

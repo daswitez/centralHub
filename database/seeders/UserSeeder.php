@@ -14,12 +14,15 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         // Crear usuario administrador de prueba
-        User::create([
+        $user = User::create([
             'name' => 'Admin AgroPapas',
             'email' => 'admin@agropapas.com',
             'password' => Hash::make('password123'),
         ]);
 
-        echo "Usuario creado: admin@agropapas.com / password123\n";
+        // Asignar rol de admin
+        $user->assignRole('admin');
+
+        echo "Usuario creado: admin@agropapas.com / password123 (ROL: admin)\n";
     }
 }
