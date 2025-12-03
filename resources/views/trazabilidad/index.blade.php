@@ -154,7 +154,6 @@
     </div>
 @endsection
 
-@push('styles')
 <style>
     .flow-container {
         display: flex;
@@ -242,16 +241,18 @@
         margin-top: 0.3rem;
     }
 </style>
-@endpush
 
-@push('scripts')
 <script>
 // Mostrar/ocultar dropdowns según el tipo seleccionado
 function actualizarDropdown() {
     const tipo = document.getElementById('tipoBusqueda').value;
+    console.log('Cambiando a tipo:', tipo);
     
-    // Ocultar todos los dropdowns
-    document.querySelectorAll('.dropdown-lote').forEach(dropdown => {
+    // Ocultar todos los dropdowns primero
+    const dropdowns = document.querySelectorAll('.dropdown-lote');
+    console.log('Total dropdowns encontrados:', dropdowns.length);
+    
+    dropdowns.forEach(dropdown => {
         dropdown.style.display = 'none';
         dropdown.value = ''; // Reset value
     });
@@ -259,14 +260,20 @@ function actualizarDropdown() {
     // Mostrar el dropdown correspondiente
     if (tipo) {
         const dropdownActivo = document.getElementById(`dropdown_${tipo}`);
+        console.log('Dropdown activo:', dropdownActivo);
+        
         if (dropdownActivo) {
             dropdownActivo.style.display = 'block';
+            console.log('✓ Dropdown mostrado para:', tipo);
+        } else {
+            console.error('No se encontró dropdown para tipo:', tipo);
         }
     }
 }
 
 async function buscarTrazabilidad() {
     const tipo = document.getElementById('tipoBusqueda').value;
+    console.log('🔍 Buscando trazabilidad - Tipo:', tipo);
     
     if (!tipo) {
         alert('Por favor seleccione un tipo de búsqueda');
@@ -277,10 +284,15 @@ async function buscarTrazabilidad() {
     const dropdownActivo = document.getElementById(`dropdown_${tipo}`);
     const codigo = dropdownActivo ? dropdownActivo.value : '';
     
+    console.log('Dropdown activo:', dropdownActivo);
+    console.log('Código seleccionado:', codigo);
+    
     if (!codigo) {
-        alert('Por favor seleccione una opción');
+        alert('Por favor seleccione un lote');
         return;
     }
+
+    console.log(`📡 Llamando a API: /api/trazabilidad/${tipo}/${codigo}`);
 
     // Mostrar loading
     document.getElementById('loadingSpinner').style.display = 'block';
@@ -288,19 +300,28 @@ async function buscarTrazabilidad() {
     document.getElementById('errorAlert').style.display = 'none';
 
     try {
-        const response = await fetch(`/api/trazabilidad/${tipo}/${encodeURIComponent(codigo)}`);
+        const url = `/api/trazabilidad/${tipo}/${encodeURIComponent(codigo)}`;
+        console.log('URL completa:', url);
+        
+        const response = await fetch(url);
+        console.log('Response status:', response.status);
         
         if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Error response:', errorText);
             throw new Error('No se encontró información de trazabilidad');
         }
 
         const data = await response.json();
+        console.log('✓ Datos recibidos:', data);
+        
         renderizarTrazabilidad(data);
         
         document.getElementById('loadingSpinner').style.display = 'none';
         document.getElementById('resultadosTrazabilidad').style.display = 'block';
 
     } catch (error) {
+        console.error('❌ Error en búsqueda:', error);
         document.getElementById('loadingSpinner').style.display = 'none';
         document.getElementById('errorAlert').style.display = 'block';
         document.getElementById('errorMessage').textContent = error.message;
@@ -308,6 +329,7 @@ async function buscarTrazabilidad() {
 }
 
 function renderizarTrazabilidad(datos) {
+    console.log('🎨 Renderizando trazabilidad...');
     const container = document.getElementById('flowDiagram');
     container.innerHTML = '';
 
@@ -320,16 +342,26 @@ function renderizarTrazabilidad(datos) {
     };
 
     Object.entries(datos.etapas).forEach(([key, etapaData]) => {
-        if (!etapaData) return;
+        // Validar que existen datos
+        if (!etapaData) {
+            console.log(`⚠️ Etapa ${key} no tiene datos`);
+            return;
+        }
 
         const config = etapaConfig[key];
         if (!config) return;
 
-        // Si es array (múltiples), mostrar solo el primero en flow
-        const data = Array.isArray(etapaData) ? etapaData[0] : etapaData;
+        // Si es array, tomar el primero si existe
+        let data = Array.isArray(etapaData) ? etapaData[0] : etapaData;
+        
+        // Validar que data existe y tiene las propiedades necesarias
+        if (!data || !data.codigo) {
+            console.log(`⚠️ Etapa ${key} tiene datos inválidos o vacíos`);
+            return;
+        }
 
         const div = document.createElement('div');
-        div.className = `stage ${data.estado}`;
+        div.className = `stage ${data.estado || 'pending'}`;
         div.innerHTML = `
             <div class="stage-icon">${config.icono}</div>
             <div class="stage-name">${config.nombre}</div>
@@ -338,6 +370,7 @@ function renderizarTrazabilidad(datos) {
         `;
         
         container.appendChild(div);
+        console.log(`✓ Etapa ${key} agregada`);
     });
 
     // Renderizar detalles
@@ -354,13 +387,17 @@ function renderizarDetalles(etapas) {
         const dataArray = Array.isArray(etapaData) ? etapaData : [etapaData];
 
         dataArray.forEach((data, index) => {
-            if (!data.detalles) return;
+            // Validar que data existe y tiene detalles
+            if (!data || !data.detalles || typeof data.detalles !== 'object') {
+                console.log(`⚠️ Detalles no disponibles para ${key}`);
+                return;
+            }
 
             const card = document.createElement('div');
             card.className = 'card mb-2';
             card.innerHTML = `
                 <div class="card-header">
-                    <h5 class="mb-0">${key.toUpperCase()}${dataArray.length > 1 ? ` #${index + 1}` : ''}: ${data.codigo}</h5>
+                    <h5 class="mb-0">${key.toUpperCase()}${dataArray.length > 1 ? ` #${index + 1}` : ''}: ${data.codigo || 'Sin código'}</h5>
                 </div>
                 <div class="card-body">
                     ${Object.entries(data.detalles).map(([k, v]) => `
@@ -371,6 +408,8 @@ function renderizarDetalles(etapas) {
             container.appendChild(card);
         });
     });
+    
+    console.log('✓ Detalles renderizados');
 }
 
 function formatDate(dateString) {
@@ -381,7 +420,7 @@ function formatDate(dateString) {
 
 // Inicializar al cargar la página
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('✓ Página cargada, inicializando...');
     actualizarDropdown();
 });
 </script>
-@endpush

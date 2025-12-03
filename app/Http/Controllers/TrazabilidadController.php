@@ -190,8 +190,91 @@ return [
      */
     private function trazabilidadDesdePlanta(string $codigo): array
     {
-        // Similar estructura pero desde planta hacia adelante y atrás
-        return $this->trazabilidadCompleta('planta', $codigo);
+        // 1. Obtener lote de planta
+        $lotePlanta = DB::table('planta.loteplanta as lp')
+            ->select(['lp.*', 'pl.nombre as planta_nombre'])
+            ->leftJoin('cat.planta as pl', 'pl.planta_id', '=', 'lp.planta_id')
+            ->where('lp.codigo_lote_planta', $codigo)
+            ->first();
+
+        if (!$lotePlanta) {
+            return ['error' => 'Lote de planta no encontrado'];
+        }
+
+        // 2. Lotes de campo origen
+        $lotesCampo = DB::select("
+            SELECT lc.*, p.nombre as productor_nombre, v.nombre_comercial as variedad_nombre
+            FROM planta.loteplanta_entradacampo lpe
+            JOIN campo.lotecampo lc ON lc.lote_campo_id = lpe.lote_campo_id
+            JOIN campo.productor p ON p.productor_id = lc.productor_id
+            JOIN cat.variedadpapa v ON v.variedad_id = lc.variedad_id
+            WHERE lpe.lote_planta_id = ?
+        ", [$lotePlanta->lote_planta_id]);
+
+        // 3. Lotes de salida
+        $lotesSalida = DB::select("
+            SELECT ls.*
+            FROM planta.lotesalida ls
+            WHERE ls.lote_planta_id = ?
+        ", [$lotePlanta->lote_planta_id]);
+
+        // 4. Envíos
+        $envios = [];
+        foreach ($lotesSalida as $ls) {
+            $enviosData = DB::select("
+                SELECT DISTINCT e.*, ed.cantidad_t
+                FROM logistica.enviodetalle ed
+                JOIN logistica.envio e ON e.envio_id = ed.envio_id
+                WHERE ed.lote_salida_id = ?
+            ", [$ls->lote_salida_id]);
+            $envios = array_merge($envios, $enviosData);
+        }
+
+        return [
+            'etapas' => [
+                'campo' => count($lotesCampo) > 0 ? [
+                    'codigo' => $lotesCampo[0]->codigo_lote_campo,
+                    'estado' => 'completed',
+                    'fecha' => $lotesCampo[0]->fecha_cosecha,
+                    'detalles' => [
+                        'productor' => $lotesCampo[0]->productor_nombre,
+                        'variedad' => $lotesCampo[0]->variedad_nombre,
+                        'superficie_ha' => $lotesCampo[0]->superficie_ha
+                    ]
+                ] : null,
+                'planta' => [[
+                    'codigo' => $lotePlanta->codigo_lote_planta,
+                    'estado' => 'completed',
+                    'fecha' => $lotePlanta->fecha_inicio,
+                    'detalles' => [
+                        'planta' => $lotePlanta->planta_nombre,
+                        'rendimiento_pct' => $lotePlanta->rendimiento_pct
+                    ]
+                ]],
+                'salida' => array_map(function($ls) {
+                    return [
+                        'codigo' => $ls->codigo_lote_salida,
+                        'estado' => 'completed',
+                        'fecha' => $ls->fecha_empaque,
+                        'detalles' => [
+                            'sku' => $ls->sku,
+                            'peso_t' => $ls->peso_t
+                        ]
+                    ];
+                }, $lotesSalida),
+                'envio' => array_map(function($e) {
+                    return [
+                        'codigo' => $e->codigo_envio,
+                        'estado' => strtolower($e->estado),
+                        'fecha' => $e->fecha_salida,
+                        'detalles' => [
+                            'estado' => $e->estado,
+                            'cantidad_t' => $e->cantidad_t
+                        ]
+                    ];
+                }, $envios)
+            ]
+        ];
     }
 
     /**
@@ -199,7 +282,86 @@ return [
      */
     private function trazabilidadDesdeSalida(string $codigo): array
     {
-        return $this->trazabilidadCompleta('salida', $codigo);
+        // 1. Obtener lote de salida
+        $loteSalida = DB::table('planta.lotesalida as ls')
+            ->select(['ls.*'])
+            ->where('ls.codigo_lote_salida', $codigo)
+            ->first();
+
+        if (!$loteSalida) {
+            return ['error' => 'Lote de salida no encontrado'];
+        }
+
+        // 2. Lote de planta
+        $lotePlanta = DB::table('planta.loteplanta as lp')
+            ->select(['lp.*', 'pl.nombre as planta_nombre'])
+            ->leftJoin('cat.planta as pl', 'pl.planta_id', '=', 'lp.planta_id')
+            ->where('lp.lote_planta_id', $loteSalida->lote_planta_id)
+            ->first();
+
+        // 3. Lotes de campo
+        $lotesCampo = [];
+        if ($lotePlanta) {
+            $lotesCampo = DB::select("
+                SELECT lc.*, p.nombre as productor_nombre, v.nombre_comercial as variedad_nombre
+                FROM planta.loteplanta_entradacampo lpe
+                JOIN campo.lotecampo lc ON lc.lote_campo_id = lpe.lote_campo_id
+                JOIN campo.productor p ON p.productor_id = lc.productor_id
+                JOIN cat.variedadpapa v ON v.variedad_id = lc.variedad_id
+                WHERE lpe.lote_planta_id = ?
+            ", [$lotePlanta->lote_planta_id]);
+        }
+
+        // 4. Envíos
+        $envios = DB::select("
+            SELECT DISTINCT e.*, ed.cantidad_t
+            FROM logistica.enviodetalle ed
+            JOIN logistica.envio e ON e.envio_id = ed.envio_id
+            WHERE ed.lote_salida_id = ?
+        ", [$loteSalida->lote_salida_id]);
+
+        return [
+            'etapas' => [
+                'campo' => count($lotesCampo) > 0 ? [
+                    'codigo' => $lotesCampo[0]->codigo_lote_campo,
+                    'estado' => 'completed',
+                    'fecha' => $lotesCampo[0]->fecha_cosecha,
+                    'detalles' => [
+                        'productor' => $lotesCampo[0]->productor_nombre,
+                        'variedad' => $lotesCampo[0]->variedad_nombre
+                    ]
+                ] : null,
+                'planta' => $lotePlanta ? [[
+                    'codigo' => $lotePlanta->codigo_lote_planta,
+                    'estado' => 'completed',
+                    'fecha' => $lotePlanta->fecha_inicio,
+                    'detalles' => [
+                        'planta' => $lotePlanta->planta_nombre,
+                        'rendimiento_pct' => $lotePlanta->rendimiento_pct
+                    ]
+                ]] : [],
+                'salida' => [[
+                    'codigo' => $loteSalida->codigo_lote_salida,
+                    'estado' => 'completed',
+                    'fecha' => $loteSalida->fecha_empaque,
+                    'detalles' => [
+                        'sku' => $loteSalida->sku,
+                        'peso_t' => $loteSalida->peso_t
+                    ]
+                ]],
+                'envio' => array_map(function($e) {
+                    return [
+                        'codigo' => $e->codigo_envio,
+                        'estado' => strtolower($e->estado),
+                        'fecha' => $e->fecha_salida,
+                        'detalles' => [
+                            'estado' => $e->estado,
+                            'cantidad_t' => $e->cantidad_t
+                        ]
+                    ];
+                }, $envios)
+            ]
+        ];
     }
 
     /**
@@ -207,7 +369,87 @@ return [
      */
     private function trazabilidadDesdeEnvio(string $codigo): array
     {
-        return $this->trazabilidadCompleta('envio', $codigo);
+        // 1. Obtener envío
+        $envio = DB::table('logistica.envio as e')
+            ->select(['e.*'])
+            ->where('e.codigo_envio', $codigo)
+            ->first();
+
+        if (!$envio) {
+            return ['error' => 'Envío no encontrado'];
+        }
+
+        // 2. Lotes de salida
+        $lotesSalida = DB::select("
+            SELECT DISTINCT ls.*, ed.cantidad_t
+            FROM logistica.enviodetalle ed
+            JOIN planta.lotesalida ls ON ls.lote_salida_id = ed.lote_salida_id
+            WHERE ed.envio_id = ?
+        ", [$envio->envio_id]);
+
+        // 3. Lotes de planta (del primer lote de salida)
+        $lotePlanta = null;
+        $lotesCampo = [];
+        if (count($lotesSalida) > 0) {
+            $lotePlanta = DB::table('planta.loteplanta as lp')
+                ->select(['lp.*', 'pl.nombre as planta_nombre'])
+                ->leftJoin('cat.planta as pl', 'pl.planta_id', '=', 'lp.planta_id')
+                ->where('lp.lote_planta_id', $lotesSalida[0]->lote_planta_id)
+                ->first();
+
+            if ($lotePlanta) {
+                $lotesCampo = DB::select("
+                    SELECT lc.*, p.nombre as productor_nombre, v.nombre_comercial as variedad_nombre
+                    FROM planta.loteplanta_entradacampo lpe
+                    JOIN campo.lotecampo lc ON lc.lote_campo_id = lpe.lote_campo_id
+                    JOIN campo.productor p ON p.productor_id = lc.productor_id
+                    JOIN cat.variedadpapa v ON v.variedad_id = lc.variedad_id
+                    WHERE lpe.lote_planta_id = ?
+                ", [$lotePlanta->lote_planta_id]);
+            }
+        }
+
+        return [
+            'etapas' => [
+                'campo' => count($lotesCampo) > 0 ? [
+                    'codigo' => $lotesCampo[0]->codigo_lote_campo,
+                    'estado' => 'completed',
+                    'fecha' => $lotesCampo[0]->fecha_cosecha,
+                    'detalles' => [
+                        'productor' => $lotesCampo[0]->productor_nombre,
+                        'variedad' => $lotesCampo[0]->variedad_nombre
+                    ]
+                ] : null,
+                'planta' => $lotePlanta ? [[
+                    'codigo' => $lotePlanta->codigo_lote_planta,
+                    'estado' => 'completed',
+                    'fecha' => $lotePlanta->fecha_inicio,
+                    'detalles' => [
+                        'planta' => $lotePlanta->planta_nombre
+                    ]
+                ]] : [],
+                'salida' => array_map(function($ls) {
+                    return [
+                        'codigo' => $ls->codigo_lote_salida,
+                        'estado' => 'completed',
+                        'fecha' => $ls->fecha_empaque,
+                        'detalles' => [
+                            'sku' => $ls->sku,
+                            'peso_t' => $ls->peso_t,
+                            'cantidad_envio_t' => $ls->cantidad_t
+                        ]
+                    ];
+                }, $lotesSalida),
+                'envio' => [[
+                    'codigo' => $envio->codigo_envio,
+                    'estado' => strtolower($envio->estado),
+                    'fecha' => $envio->fecha_salida,
+                    'detalles' => [
+                        'estado' => $envio->estado
+                    ]
+                ]]
+            ]
+        ];
     }
 
     /**
@@ -215,22 +457,22 @@ return [
      */
     private function trazabilidadDesdePedido(string $codigo): array
     {
-        return $this->trazabilidadCompleta('pedido', $codigo);
-    }
-
-    /**
-     * Helper para obtener trazabilidad completa
-     */
-    private function trazabilidadCompleta(string $inicio, string $codigo): array
-    {
-        // Esta es una versión simplificada
-        // En producción, implementar queries recursivos completos
+        // Por ahora devolver mensaje indicando que no está implementado
+        // ya que no tenemos la estructura completa de pedido detalle vinculado a lotes
         return [
             'etapas' => [
-                'campo' => ['codigo' => 'LC-XXX', 'estado' => 'completed', 'fecha' => date('Y-m-d')],
-                'planta' => [['codigo' => 'LP-XXX', 'estado' => 'completed', 'fecha' => date('Y-m-d')]],
-                'salida' => [['codigo' => 'LS-XXX', 'estado' => 'completed', 'fecha' => date('Y-m-d')]],
-                'envio' => [['codigo' => 'ENV-XXX', 'estado' => 'pending', 'fecha' => date('Y-m-d')]]
+                'campo' => null,
+                'planta' => [],
+                'salida' => [],
+               'envio' => [],
+                'pedido' => [[
+                    'codigo' => $codigo,
+                    'estado' => 'pending',
+                    'fecha' => date('Y-m-d'),
+                    'detalles' => [
+                        'info' => 'Trazabilidad desde pedido en desarrollo'
+                    ]
+                ]]
             ]
         ];
     }
