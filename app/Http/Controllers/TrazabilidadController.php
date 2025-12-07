@@ -30,9 +30,22 @@ class TrazabilidadController extends Controller
             ->orderBy('fecha_empaque', 'desc')
             ->get();
 
+        // Órdenes de envío (Planta → Almacén)
+        $ordenesEnvio = DB::table('logistica.orden_envio')
+            ->select('orden_envio_id', 'codigo_orden', 'fecha_creacion')
+            ->orderBy('fecha_creacion', 'desc')
+            ->get();
+
         $envios = DB::table('logistica.envio')
             ->select('envio_id', 'codigo_envio', 'fecha_salida')
             ->orderBy('fecha_salida', 'desc')
+            ->get();
+
+        // Recepciones en almacén
+        $recepciones = DB::table('almacen.recepcion as r')
+            ->select(['r.recepcion_id', 'r.fecha_recepcion', 'a.nombre as almacen_nombre'])
+            ->leftJoin('cat.almacen as a', 'a.almacen_id', '=', 'r.almacen_id')
+            ->orderBy('r.fecha_recepcion', 'desc')
             ->get();
 
         $pedidos = DB::table('comercial.pedido')
@@ -44,10 +57,13 @@ class TrazabilidadController extends Controller
             'lotesCampo',
             'lotesPlanta', 
             'lotesSalida',
+            'ordenesEnvio',
             'envios',
+            'recepciones',
             'pedidos'
         ));
     }
+
 
     /**
      * Obtener datos completos de trazabilidad
@@ -60,10 +76,12 @@ class TrazabilidadController extends Controller
                 'campo' => $this->trazabilidadDesdeCampo($codigo),
                 'planta' => $this->trazabilidadDesdePlanta($codigo),
                 'salida' => $this->trazabilidadDesdeSalida($codigo),
+                'orden_envio' => $this->trazabilidadDesdeOrdenEnvio($codigo),
                 'envio' => $this->trazabilidadDesdeEnvio($codigo),
                 'pedido' => $this->trazabilidadDesdePedido($codigo),
                 default => ['error' => 'Tipo no válido']
             };
+
 
             if (isset($datos['error'])) {
                 return response()->json($datos, 404);
@@ -476,4 +494,126 @@ return [
             ]
         ];
     }
+
+    /**
+     * Trazabilidad desde Orden de Envío (Planta → Almacén)
+     */
+    private function trazabilidadDesdeOrdenEnvio(string $codigo): array
+    {
+        // 1. Obtener orden de envío
+        $orden = DB::table('logistica.orden_envio as oe')
+            ->select([
+                'oe.*',
+                'p.nombre as planta_nombre',
+                'a.nombre as almacen_nombre',
+                'z.nombre as zona_nombre',
+                't.nombre as conductor_nombre',
+                'v.placa as vehiculo_placa',
+                'v.marca as vehiculo_marca'
+            ])
+            ->leftJoin('cat.planta as p', 'p.planta_id', '=', 'oe.planta_origen_id')
+            ->leftJoin('cat.almacen as a', 'a.almacen_id', '=', 'oe.almacen_destino_id')
+            ->leftJoin('almacen.zona as z', 'z.zona_id', '=', 'oe.zona_destino_id')
+            ->leftJoin('cat.transportista as t', 't.transportista_id', '=', 'oe.transportista_id')
+            ->leftJoin('cat.vehiculo as v', 'v.vehiculo_id', '=', 'oe.vehiculo_id')
+            ->where('oe.codigo_orden', $codigo)
+            ->first();
+
+        if (!$orden) {
+            return ['error' => 'Orden de envío no encontrada'];
+        }
+
+        // 2. Obtener lote de salida
+        $loteSalida = DB::table('planta.lotesalida as ls')
+            ->select(['ls.*'])
+            ->where('ls.lote_salida_id', $orden->lote_salida_id)
+            ->first();
+
+        // 3. Obtener lote de planta
+        $lotePlanta = null;
+        $loteCampo = null;
+        if ($loteSalida) {
+            $lotePlanta = DB::table('planta.loteplanta as lp')
+                ->select(['lp.*', 'pl.nombre as planta_nombre'])
+                ->leftJoin('cat.planta as pl', 'pl.planta_id', '=', 'lp.planta_id')
+                ->where('lp.lote_planta_id', $loteSalida->lote_planta_id)
+                ->first();
+
+            // 4. Obtener lotes de campo
+            if ($lotePlanta) {
+                $loteCampo = DB::table('campo.lotecampo as lc')
+                    ->select(['lc.*', 'pr.nombre as productor_nombre', 'v.nombre_comercial as variedad'])
+                    ->leftJoin('campo.productor as pr', 'pr.productor_id', '=', 'lc.productor_id')
+                    ->leftJoin('cat.variedadpapa as v', 'v.variedad_id', '=', 'lc.variedad_id')
+                    ->join('planta.loteplanta_entradacampo as lpe', 'lpe.lote_campo_id', '=', 'lc.lote_campo_id')
+                    ->where('lpe.lote_planta_id', $lotePlanta->lote_planta_id)
+                    ->first();
+            }
+        }
+
+        // 5. Verificar si hay recepción en almacén
+        $recepcion = DB::table('almacen.recepcion as r')
+            ->select(['r.*', 'u.codigo_ubicacion', 'z.nombre as zona_recepcion'])
+            ->leftJoin('almacen.ubicacion as u', 'u.ubicacion_id', '=', 'r.ubicacion_id')
+            ->leftJoin('almacen.zona as z', 'z.zona_id', '=', 'r.zona_id')
+            ->where('r.orden_envio_id', $orden->orden_envio_id)
+            ->first();
+
+        return [
+            'etapas' => [
+                'campo' => $loteCampo ? [
+                    'codigo' => $loteCampo->codigo_lote_campo,
+                    'estado' => 'completed',
+                    'fecha' => $loteCampo->fecha_cosecha,
+                    'detalles' => [
+                        'productor' => $loteCampo->productor_nombre,
+                        'variedad' => $loteCampo->variedad
+                    ]
+                ] : null,
+                'planta' => $lotePlanta ? [[
+                    'codigo' => $lotePlanta->codigo_lote_planta,
+                    'estado' => 'completed',
+                    'fecha' => $lotePlanta->fecha_inicio,
+                    'detalles' => [
+                        'planta' => $lotePlanta->planta_nombre,
+                        'rendimiento' => $lotePlanta->rendimiento_pct . '%'
+                    ]
+                ]] : [],
+                'salida' => $loteSalida ? [[
+                    'codigo' => $loteSalida->codigo_lote_salida,
+                    'estado' => 'completed',
+                    'fecha' => $loteSalida->fecha_empaque,
+                    'detalles' => [
+                        'sku' => $loteSalida->sku,
+                        'peso' => $loteSalida->peso_t . ' t'
+                    ]
+                ]] : [],
+                'orden_envio' => [[
+                    'codigo' => $orden->codigo_orden,
+                    'estado' => strtolower($orden->estado),
+                    'fecha' => $orden->fecha_creacion,
+                    'detalles' => [
+                        'planta_origen' => $orden->planta_nombre,
+                        'almacen_destino' => $orden->almacen_nombre,
+                        'conductor' => $orden->conductor_nombre ?? 'Sin asignar',
+                        'vehiculo' => $orden->vehiculo_placa ?? 'Sin asignar',
+                        'cantidad' => $orden->cantidad_t . ' t',
+                        'prioridad' => $orden->prioridad
+                    ]
+                ]],
+                'almacen' => $recepcion ? [[
+                    'codigo' => 'REC-' . $recepcion->recepcion_id,
+                    'estado' => 'completed',
+                    'fecha' => $recepcion->fecha_recepcion,
+                    'detalles' => [
+                        'zona' => $recepcion->zona_recepcion,
+                        'ubicacion' => $recepcion->codigo_ubicacion,
+                        'cantidad_recibida' => $recepcion->cantidad_recibida_t . ' t',
+                        'estado_producto' => $recepcion->estado_producto ?? 'BUENO'
+                    ]
+                ]] : []
+            ]
+        ];
+    }
 }
+

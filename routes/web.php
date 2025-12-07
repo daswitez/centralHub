@@ -135,6 +135,30 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/trazabilidad/{tipo}/{codigo}', [TrazabilidadController::class, 'getDatosCompletos']);
     });
     
+    // Almacenes (show adicional)
+    Route::get('/cat/almacenes/{id}', [AlmacenController::class, 'show'])->name('cat.almacenes.show');
+    
+    // Vehículos
+    Route::prefix('vehiculos')->name('vehiculos.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Cat\VehiculoController::class, 'index'])->name('index');
+        Route::get('/crear', [\App\Http\Controllers\Cat\VehiculoController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\Cat\VehiculoController::class, 'store'])->name('store');
+        Route::get('/{id}', [\App\Http\Controllers\Cat\VehiculoController::class, 'show'])->name('show');
+        Route::get('/{id}/editar', [\App\Http\Controllers\Cat\VehiculoController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [\App\Http\Controllers\Cat\VehiculoController::class, 'update'])->name('update');
+        Route::post('/{id}/asignar-conductor', [\App\Http\Controllers\Cat\VehiculoController::class, 'asignarConductor'])->name('asignar-conductor');
+    });
+    
+    // Órdenes de Envío (Planta → Almacén)
+    Route::prefix('ordenes-envio')->name('ordenes-envio.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Logistica\OrdenEnvioController::class, 'index'])->name('index');
+        Route::get('/crear', [\App\Http\Controllers\Logistica\OrdenEnvioController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\Logistica\OrdenEnvioController::class, 'store'])->name('store');
+        Route::get('/{id}', [\App\Http\Controllers\Logistica\OrdenEnvioController::class, 'show'])->name('show');
+        Route::post('/{id}/asignar-conductor', [\App\Http\Controllers\Logistica\OrdenEnvioController::class, 'asignarConductor'])->name('asignar-conductor');
+        Route::post('/{id}/cambiar-estado', [\App\Http\Controllers\Logistica\OrdenEnvioController::class, 'cambiarEstado'])->name('cambiar-estado');
+    });
+    
     // Dashboard alias
     Route::get('/dashboard', function() {
         return redirect()->route('panel.home');

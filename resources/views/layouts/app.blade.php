@@ -199,7 +199,52 @@
                                     <p>Trazabilidad</p>
                                 </a>
                             </li>
+
+                            {{-- Menú de Almacenes y Logística --}}
+                            <li class="nav-item has-treeview">
+                                <a href="#" class="nav-link">
+                                    <i class="nav-icon fas fa-warehouse"></i>
+                                    <p>Almacenes <i class="right fas fa-angle-left"></i></p>
+                                </a>
+                                <ul class="nav nav-treeview">
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{{ route('cat.almacenes.index') }}">
+                                            <p>Lista de Almacenes</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{{ route('cat.almacenes.create') }}">
+                                            <p>Nuevo Almacén</p>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+
+                            <li class="nav-item has-treeview">
+                                <a href="#" class="nav-link">
+                                    <i class="nav-icon fas fa-truck"></i>
+                                    <p>Logística <i class="right fas fa-angle-left"></i></p>
+                                </a>
+                                <ul class="nav nav-treeview">
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{{ route('vehiculos.index') }}">
+                                            <p>Vehículos</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{{ route('ordenes-envio.index') }}">
+                                            <p>Órdenes de Envío</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{{ route('ordenes-envio.create') }}">
+                                            <p>Nueva Orden</p>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
                         </ul>
+
                     </nav>
                 </div>
             </aside>

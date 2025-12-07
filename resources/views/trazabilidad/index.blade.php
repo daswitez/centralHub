@@ -20,11 +20,12 @@
                     <div class="form-group">
                         <label for="tipoBusqueda">Tipo de Búsqueda *</label>
                         <select id="tipoBusqueda" class="form-control" onchange="actualizarDropdown()">
-                            <option value="campo" selected>Lote de Campo</option>
-                            <option value="planta">Lote de Planta</option>
-                            <option value="salida">Lote de Salida</option>
-                            <option value="envio">Envío</option>
-                            <option value="pedido">Pedido</option>
+                            <option value="campo" selected>🌱 Lote de Campo</option>
+                            <option value="planta">🏭 Lote de Planta</option>
+                            <option value="salida">📦 Lote de Salida/Empaque</option>
+                            <option value="orden_envio">🚛 Orden de Envío (Planta→Almacén)</option>
+                            <option value="envio">📍 Envío/Transporte</option>
+                            <option value="pedido">📄 Pedido Cliente</option>
                         </select>
                     </div>
                 </div>
@@ -61,6 +62,17 @@
                                 <option value="{{ $ls->codigo_lote_salida }}">
                                     {{ $ls->codigo_lote_salida }} - 
                                     {{ \Carbon\Carbon::parse($ls->fecha_empaque)->format('d/m/Y') }}
+                                </option>
+                            @endforeach
+                        </select>
+
+                        {{-- Dropdown para Orden de Envío (NUEVO) --}}
+                        <select id="dropdown_orden_envio" class="form-control dropdown-lote" style="display: none;">
+                            <option value="">Seleccione orden de envío...</option>
+                            @foreach($ordenesEnvio ?? [] as $oe)
+                                <option value="{{ $oe->codigo_orden }}">
+                                    {{ $oe->codigo_orden }} - 
+                                    {{ \Carbon\Carbon::parse($oe->fecha_creacion)->format('d/m/Y') }}
                                 </option>
                             @endforeach
                         </select>
@@ -337,9 +349,12 @@ function renderizarTrazabilidad(datos) {
         'campo': { nombre: 'Campo', icono: '🌱' },
         'planta': { nombre: 'Planta', icono: '🏭' },
         'salida': { nombre: 'Empaque', icono: '📦' },
-        'envio': { nombre: 'Envío', icono: '🚛' },
+        'orden_envio': { nombre: 'Orden Envío', icono: '📋' },
+        'envio': { nombre: 'Transporte', icono: '🚛' },
+        'almacen': { nombre: 'Almacén', icono: '🏪' },
         'pedido': { nombre: 'Pedido', icono: '📄' }
     };
+
 
     Object.entries(datos.etapas).forEach(([key, etapaData]) => {
         // Validar que existen datos

@@ -101,6 +101,59 @@ class AlmacenController extends Controller
         return redirect()->route('cat.almacenes.index')->with('status', 'Almacén actualizado.');
     }
 
+    /**
+     * Ver detalles del almacén con sus zonas y estadísticas
+     */
+    public function show($id): View
+    {
+        $almacenId = (int) $id;
+        $almacen = Almacen::with('municipio')->findOrFail($almacenId);
+
+        // Zonas del almacén
+        $zonas = \DB::table('almacen.zona')
+            ->where('almacen_id', $almacenId)
+            ->orderBy('codigo_zona')
+            ->get();
+
+        // Agregar conteo de ubicaciones por zona
+        foreach ($zonas as $zona) {
+            $zona->ubicaciones_count = \DB::table('almacen.ubicacion')
+                ->where('zona_id', $zona->zona_id)
+                ->count();
+            
+            $zona->ubicaciones_ocupadas = \DB::table('almacen.ubicacion')
+                ->where('zona_id', $zona->zona_id)
+                ->where('ocupado', true)
+                ->count();
+            
+            $zona->ocupacion_pct = $zona->ubicaciones_count > 0 
+                ? round($zona->ubicaciones_ocupadas / $zona->ubicaciones_count * 100, 1) 
+                : 0;
+        }
+
+        // Estadísticas generales
+        $stats = [
+            'total_zonas' => count($zonas),
+            'total_ubicaciones' => \DB::table('almacen.ubicacion as u')
+                ->join('almacen.zona as z', 'z.zona_id', '=', 'u.zona_id')
+                ->where('z.almacen_id', $almacenId)
+                ->count(),
+            'ubicaciones_ocupadas' => \DB::table('almacen.ubicacion as u')
+                ->join('almacen.zona as z', 'z.zona_id', '=', 'u.zona_id')
+                ->where('z.almacen_id', $almacenId)
+                ->where('u.ocupado', true)
+                ->count(),
+            'ocupacion_pct' => 0
+        ];
+        
+        if ($almacen->capacidad_total_t && $almacen->capacidad_total_t > 0) {
+            $ocupado = $almacen->capacidad_total_t - ($almacen->capacidad_disponible_t ?? 0);
+            $stats['ocupacion_pct'] = round(($ocupado / $almacen->capacidad_total_t) * 100, 1);
+        }
+
+        return view('cat.almacenes.show', compact('almacen', 'zonas', 'stats'));
+    }
+
     public function destroy(Request $request, $id): RedirectResponse|JsonResponse
     {
         $almacenId = (int) $id;
@@ -117,5 +170,6 @@ class AlmacenController extends Controller
         return redirect()->route('cat.almacenes.index')->with('status', 'Almacén eliminado.');
     }
 }
+
 
 
