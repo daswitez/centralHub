@@ -8,22 +8,196 @@ use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
-    /** Panel principal: Producción Bolivia (KPIs + tablas) */
+    /** Panel principal: Dashboard Ejecutivo con resumen general */
     public function home(): View
     {
-        // KPIs simples desde el esquema (si existen); valores por defecto si no hay datos
-        $stock = DB::selectOne('select coalesce(sum(cantidad_t),0) as t from almacen.inventario');
-        $enviosHoy = DB::selectOne('select count(*) as c from logistica.envio where date(fecha_salida)=current_date');
-        $lotesIot = DB::selectOne('select count(distinct lote_campo_id) as c from campo.sensorlectura');
+        // ====== KPIs PRINCIPALES ======
+        
+        // Inventario total en almacenes
+        $stockTotal = DB::selectOne('SELECT coalesce(sum(cantidad_t),0) as t FROM almacen.inventario');
+        
+        // Envíos del día
+        $enviosHoy = DB::selectOne('SELECT count(*) as c FROM logistica.envio WHERE date(fecha_salida)=current_date');
+        
+        // Envíos en ruta activos
+        $enviosEnRuta = DB::selectOne("SELECT count(*) as c FROM logistica.envio WHERE estado = 'EN_RUTA'");
+        
+        // Órdenes de envío pendientes
+        $ordenesPendientes = DB::selectOne("SELECT count(*) as c FROM logistica.orden_envio WHERE estado IN ('PENDIENTE', 'CONDUCTOR_ASIGNADO')");
+        
+        // Lotes procesados este mes
+        $lotesProducidos = DB::selectOne("
+            SELECT count(*) as c FROM planta.loteplanta 
+            WHERE date_trunc('month', fecha_inicio) = date_trunc('month', current_date)
+        ");
+        
+        // Toneladas empacadas este mes
+        $toneladasEmpacadas = DB::selectOne("
+            SELECT coalesce(sum(peso_t), 0) as t FROM planta.lotesalida 
+            WHERE date_trunc('month', fecha_empaque) = date_trunc('month', current_date)
+        ");
+        
+        // Productores registrados
+        $productoresActivos = DB::selectOne("SELECT count(*) as c FROM campo.productor");
+        
+        // Pedidos del mes
+        $pedidosMes = DB::selectOne("
+            SELECT count(*) as c FROM comercial.pedido 
+            WHERE date_trunc('month', fecha_pedido) = date_trunc('month', current_date)
+        ");
+        
+        // Vehículos disponibles (verificar si la columna existe)
+        $vehiculosDisponibles = DB::selectOne("SELECT count(*) as c FROM cat.vehiculo WHERE estado = 'DISPONIBLE'");
+
+        
+        // Rendimiento promedio de plantas
+        $rendimientoPromedio = DB::selectOne("
+            SELECT coalesce(avg(rendimiento_pct), 0) as r FROM planta.loteplanta 
+            WHERE fecha_inicio >= current_date - interval '30 days'
+        ");
+        
+        // ====== RESÚMENES POR ÁREA ======
+        
+        // Estado de almacenes (capacidad REAL basada en inventario)
+        $almacenes = DB::select("
+            SELECT 
+                a.almacen_id, 
+                a.nombre, 
+                a.codigo_almacen,
+                coalesce(a.tipo, 'CENTRAL') as tipo,
+                coalesce(a.capacidad_total_t, 1000) as capacidad_total_t,
+                coalesce(inv.stock_actual, 0) as stock_actual_t,
+                coalesce(a.capacidad_total_t, 1000) - coalesce(inv.stock_actual, 0) as capacidad_disponible_t,
+                CASE WHEN coalesce(a.capacidad_total_t, 1000) > 0 
+                     THEN round((coalesce(inv.stock_actual, 0) / coalesce(a.capacidad_total_t, 1000)) * 100, 1) 
+                     ELSE 0 END as ocupacion_pct,
+                (SELECT count(*) FROM almacen.zona z WHERE z.almacen_id = a.almacen_id) as zonas
+            FROM cat.almacen a
+            LEFT JOIN (
+                SELECT almacen_id, sum(cantidad_t) as stock_actual
+                FROM almacen.inventario
+                GROUP BY almacen_id
+            ) inv ON inv.almacen_id = a.almacen_id
+            ORDER BY a.codigo_almacen
+            LIMIT 5
+        ");
+
+        
+        // Últimos envíos
+        $ultimosEnvios = DB::select("
+            SELECT e.codigo_envio, e.estado, e.fecha_salida, 
+                   t.nombre as transportista,
+                   v.placa as vehiculo,
+                   coalesce(sum(ed.cantidad_t), 0) as toneladas
+            FROM logistica.envio e
+            LEFT JOIN cat.transportista t ON t.transportista_id = e.transportista_id
+            LEFT JOIN cat.vehiculo v ON v.vehiculo_id = e.vehiculo_id
+            LEFT JOIN logistica.enviodetalle ed ON ed.envio_id = e.envio_id
+            GROUP BY e.envio_id, e.codigo_envio, e.estado, e.fecha_salida, t.nombre, v.placa
+            ORDER BY e.fecha_salida DESC
+            LIMIT 5
+        ");
+        
+        // Últimas órdenes de envío
+        $ultimasOrdenes = DB::select("
+            SELECT oe.orden_envio_id, oe.codigo_orden, oe.estado, oe.fecha_programada, oe.prioridad,
+                   p.nombre as planta, a.nombre as almacen,
+                   t.nombre as conductor
+            FROM logistica.orden_envio oe
+            LEFT JOIN cat.planta p ON p.planta_id = oe.planta_origen_id
+            LEFT JOIN cat.almacen a ON a.almacen_id = oe.almacen_destino_id
+            LEFT JOIN cat.transportista t ON t.transportista_id = oe.transportista_id
+            ORDER BY oe.fecha_creacion DESC
+            LIMIT 5
+        ");
+        
+        // Últimos lotes de salida
+        $ultimosLotesSalida = DB::select("
+            SELECT ls.codigo_lote_salida, ls.sku, ls.peso_t, ls.fecha_empaque,
+                   pl.nombre as planta
+            FROM planta.lotesalida ls
+            JOIN planta.loteplanta lp ON lp.lote_planta_id = ls.lote_planta_id
+            JOIN cat.planta pl ON pl.planta_id = lp.planta_id
+            ORDER BY ls.fecha_empaque DESC
+            LIMIT 5
+        ");
+        
+        // Distribución por variedad (sin filtro de fecha para obtener todos los datos)
+        $variedadesDistribucion = DB::select("
+            SELECT v.nombre_comercial as variedad, count(lc.lote_campo_id) as cantidad
+            FROM campo.lotecampo lc
+            JOIN cat.variedadpapa v ON v.variedad_id = lc.variedad_id
+            GROUP BY v.variedad_id, v.nombre_comercial
+            ORDER BY cantidad DESC
+            LIMIT 6
+        ");
+
+        
+        // Estado de plantas
+        $plantasResumen = DB::select("
+            SELECT p.nombre, p.codigo_planta,
+                   count(lp.lote_planta_id) as lotes_mes,
+                   coalesce(avg(lp.rendimiento_pct), 0) as rendimiento_prom
+            FROM cat.planta p
+            LEFT JOIN planta.loteplanta lp ON lp.planta_id = p.planta_id 
+                AND date_trunc('month', lp.fecha_inicio) = date_trunc('month', current_date)
+            GROUP BY p.planta_id
+            ORDER BY lotes_mes DESC
+            LIMIT 4
+        ");
+
+        // === NUEVOS DATOS PARA GRÁFICOS ===
+        
+        // Envíos por estado (para gráfico de dona)
+        $enviosPorEstado = DB::select("
+            SELECT estado, count(*) as cantidad
+            FROM logistica.envio
+            GROUP BY estado
+            ORDER BY cantidad DESC
+        ");
+        
+        // Producción mensual (últimos 6 meses)
+        $produccionMensual = DB::select("
+            SELECT 
+                to_char(lp.fecha_inicio, 'Mon') as mes,
+                to_char(lp.fecha_inicio, 'YYYY-MM') as mes_orden,
+                count(lp.lote_planta_id) as lotes,
+                coalesce(sum(ls.peso_t), 0) as toneladas
+            FROM planta.loteplanta lp
+            LEFT JOIN planta.lotesalida ls ON ls.lote_planta_id = lp.lote_planta_id
+            WHERE lp.fecha_inicio >= current_date - interval '6 months'
+            GROUP BY to_char(lp.fecha_inicio, 'Mon'), to_char(lp.fecha_inicio, 'YYYY-MM')
+            ORDER BY mes_orden ASC
+        ");
 
         return view('panel.home', [
-            'kpi_stock_t' => (float) ($stock->t ?? 0),
+            // KPIs principales
+            'kpi_stock_t' => (float) ($stockTotal->t ?? 0),
             'kpi_envios_hoy' => (int) ($enviosHoy->c ?? 0),
-            'kpi_lotes_iot' => (int) ($lotesIot->c ?? 0),
-            'stock_items' => DB::select('select * from almacen.v_stock order by codigo_almacen, sku limit 10'),
-            'traza_items' => DB::select('select * from planta.v_trazabilidad_lote_salida order by codigo_lote_salida limit 10'),
+            'kpi_envios_en_ruta' => (int) ($enviosEnRuta->c ?? 0),
+            'kpi_ordenes_pendientes' => (int) ($ordenesPendientes->c ?? 0),
+            'kpi_lotes_mes' => (int) ($lotesProducidos->c ?? 0),
+            'kpi_toneladas_empacadas' => (float) ($toneladasEmpacadas->t ?? 0),
+            'kpi_productores' => (int) ($productoresActivos->c ?? 0),
+            'kpi_pedidos_mes' => (int) ($pedidosMes->c ?? 0),
+            'kpi_vehiculos_disponibles' => (int) ($vehiculosDisponibles->c ?? 0),
+            'kpi_rendimiento' => round((float) ($rendimientoPromedio->r ?? 0), 1),
+            
+            // Tablas resumen
+            'almacenes' => $almacenes,
+            'ultimos_envios' => $ultimosEnvios,
+            'ultimas_ordenes' => $ultimasOrdenes,
+            'ultimos_lotes' => $ultimosLotesSalida,
+            'variedades' => $variedadesDistribucion,
+            'plantas' => $plantasResumen,
+            
+            // Datos para gráficos
+            'envios_por_estado' => $enviosPorEstado,
+            'produccion_mensual' => $produccionMensual,
         ]);
     }
+
+
 
     /** Panel comercial/ventas */
     public function ventas(): View

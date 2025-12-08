@@ -1,179 +1,606 @@
 @extends('layouts.app')
 
-@section('page_title', 'Producción de Papa — Bolivia')
+@section('page_title', 'Dashboard')
 
 @section('page_header')
-    <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between">
-        <div>
-            <h1 class="m-0 text-uppercase">Producción de Papa — Bolivia</h1>
-            <p class="text-secondary mb-0 small">Siembra → campo → planta → distribución</p>
+    <div class="row align-items-center">
+        <div class="col-sm-6">
+            <h1 class="m-0">Dashboard</h1>
         </div>
-        <ol class="breadcrumb float-sm-right bg-transparent mb-0 p-0">
-            <li class="breadcrumb-item"><a href="{{ route('panel.home') }}">Inicio</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Producción</li>
-        </ol>
+        <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+                <li class="breadcrumb-item"><a href="#">Inicio</a></li>
+                <li class="breadcrumb-item active">Dashboard</li>
+            </ol>
+        </div>
     </div>
 @endsection
 
 @section('content')
-    <div class="row">
-        <div class="col-lg-3 col-6">
-            <div class="small-box bg-primary">
-                <div class="inner">
-                    <h3>{{ number_format($kpi_envios_hoy) }}</h3>
-                    <p>Envíos de hoy</p>
+
+{{-- Fila de Info Boxes con animación --}}
+<div class="row">
+    <div class="col-12 col-sm-6 col-md-3">
+        <div class="info-box mb-3 bg-info animate__animated animate__fadeInUp">
+            <span class="info-box-icon"><i class="fas fa-warehouse"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Stock en Almacenes</span>
+                <span class="info-box-number">{{ number_format($kpi_stock_t, 1) }} <small>toneladas</small></span>
+                <div class="progress">
+                    <div class="progress-bar" style="width: 70%"></div>
                 </div>
-                <div class="icon"><i class="fas fa-truck"></i></div>
-                <a href="{{ route('panel.logistica') }}" class="small-box-footer">Ver logística <i class="fas fa-arrow-circle-right"></i></a>
-            </div>
-        </div>
-        <div class="col-lg-3 col-6">
-            <div class="small-box bg-success">
-                <div class="inner">
-                    <h3>{{ number_format($kpi_stock_t, 1) }}<sup class="fs-6"> t</sup></h3>
-                    <p>Stock total (inventario)</p>
-                </div>
-                <div class="icon"><i class="fas fa-boxes"></i></div>
-                <a href="{{ route('panel.logistica') }}" class="small-box-footer">Inventario <i class="fas fa-arrow-circle-right"></i></a>
-            </div>
-        </div>
-        <div class="col-lg-3 col-6">
-            <div class="small-box bg-warning">
-                <div class="inner">
-                    <h3>{{ number_format($kpi_lotes_iot) }}</h3>
-                    <p>Lotes con sensores activos</p>
-                </div>
-                <div class="icon"><i class="fas fa-microchip"></i></div>
-                <a href="{{ route('campo.lotes.index') }}" class="small-box-footer">Ver lotes <i class="fas fa-arrow-circle-right"></i></a>
-            </div>
-        </div>
-        <div class="col-lg-3 col-6">
-            <div class="small-box bg-danger">
-                <div class="inner">
-                    <h3>Waych'a</h3>
-                    <p>Variedades líderes</p>
-                </div>
-                <div class="icon"><i class="fas fa-seedling"></i></div>
-                <a href="{{ route('cat.variedades.index') }}" class="small-box-footer">Catálogo <i class="fas fa-arrow-circle-right"></i></a>
             </div>
         </div>
     </div>
+    
+    <div class="col-12 col-sm-6 col-md-3">
+        <div class="info-box mb-3 bg-success animate__animated animate__fadeInUp" style="animation-delay: 0.1s">
+            <span class="info-box-icon"><i class="fas fa-truck"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Envíos Hoy</span>
+                <span class="info-box-number">{{ $kpi_envios_hoy }}</span>
+                <span class="info-box-text"><small>{{ $kpi_envios_en_ruta }} en ruta</small></span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-12 col-sm-6 col-md-3">
+        <div class="info-box mb-3 bg-warning animate__animated animate__fadeInUp" style="animation-delay: 0.2s">
+            <span class="info-box-icon"><i class="fas fa-clipboard-list"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Órdenes Pendientes</span>
+                <span class="info-box-number">{{ $kpi_ordenes_pendientes }}</span>
+                <span class="info-box-text"><small>por despachar</small></span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-12 col-sm-6 col-md-3">
+        <div class="info-box mb-3 bg-danger animate__animated animate__fadeInUp" style="animation-delay: 0.3s">
+            <span class="info-box-icon"><i class="fas fa-box"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Lotes Procesados</span>
+                <span class="info-box-number">{{ $kpi_lotes_mes }}</span>
+                <span class="info-box-text"><small>este mes</small></span>
+            </div>
+        </div>
+    </div>
+</div>
 
-    <div class="row">
-        <div class="col-xl-6">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h3 class="card-title mb-0">Trazabilidad (últimos lotes)</h3>
-                    <span class="text-secondary small">Campo → Planta → Cliente</span>
+{{-- Segunda fila de Small Boxes --}}
+<div class="row">
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-gradient-primary">
+            <div class="inner">
+                <h3>{{ number_format($kpi_toneladas_empacadas, 1) }}<sup style="font-size: 20px">t</sup></h3>
+                <p>Toneladas Empacadas</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-dolly"></i>
+            </div>
+            <a href="{{ route('tx.planta.lotes-salida.index') }}" class="small-box-footer">
+                Ver lotes <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-gradient-success">
+            <div class="inner">
+                <h3>{{ $kpi_productores }}</h3>
+                <p>Productores Registrados</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <a href="{{ route('campo.productores.index') }}" class="small-box-footer">
+                Ver productores <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-gradient-warning">
+            <div class="inner">
+                <h3>{{ $kpi_pedidos_mes }}</h3>
+                <p>Pedidos este Mes</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-shopping-cart"></i>
+            </div>
+            <a href="{{ route('comercial.pedidos.index') }}" class="small-box-footer">
+                Ver pedidos <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-gradient-info">
+            <div class="inner">
+                <h3>{{ $kpi_vehiculos_disponibles }}</h3>
+                <p>Vehículos Disponibles</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-truck-loading"></i>
+            </div>
+            <a href="{{ route('vehiculos.index') }}" class="small-box-footer">
+                Ver flota <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+{{-- Gráficos --}}
+<div class="row">
+    {{-- Gráfico de Envíos por Estado --}}
+    <div class="col-lg-6">
+        <div class="card card-success card-outline">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-truck mr-1"></i>
+                    Estado de Envíos
+                </h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-minus"></i>
+                    </button>
                 </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead class="thead-dark">
+            </div>
+            <div class="card-body">
+                <canvas id="enviosEstadoChart" style="min-height: 280px; height: 280px; max-height: 280px; max-width: 100%;"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    {{-- Gráfico de Producción Mensual --}}
+    <div class="col-lg-6">
+        <div class="card card-primary card-outline">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-chart-line mr-1"></i>
+                    Producción Mensual (Últimos 6 meses)
+                </h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <canvas id="produccionMensualChart" style="min-height: 280px; height: 280px; max-height: 280px; max-width: 100%;"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{{-- Tablas de Información --}}
+<div class="row">
+    {{-- Estado de Almacenes --}}
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header border-0">
+                <h3 class="card-title"><i class="fas fa-warehouse text-primary mr-2"></i>Estado de Almacenes</h3>
+                <div class="card-tools">
+                    <a href="{{ route('cat.almacenes.index') }}" class="btn btn-tool btn-sm">
+                        <i class="fas fa-bars"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="card-body table-responsive p-0">
+                <table class="table table-striped table-valign-middle">
+                    <thead>
+                        <tr>
+                            <th>Almacén</th>
+                            <th>Tipo</th>
+                            <th>Zonas</th>
+                            <th>Ocupación</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($almacenes as $a)
                             <tr>
-                                <th>Lote salida</th>
-                                <th>Lote planta</th>
-                                <th>Clientes</th>
-                                <th>Peso (t)</th>
-                                <th>Rend. %</th>
+                                <td>
+                                    <strong>{{ $a->nombre }}</strong>
+                                    <br><small class="text-muted">{{ $a->codigo_almacen }}</small>
+                                </td>
+                                <td><span class="badge bg-info">{{ $a->tipo ?? 'CENTRAL' }}</span></td>
+                                <td>{{ $a->zonas }}</td>
+                                <td>
+                                    <div class="progress progress-sm">
+                                        @php $color = $a->ocupacion_pct > 80 ? 'bg-danger' : ($a->ocupacion_pct > 50 ? 'bg-warning' : 'bg-success'); @endphp
+                                        <div class="progress-bar {{ $color }}" style="width: {{ $a->ocupacion_pct }}%"></div>
+                                    </div>
+                                    <small>{{ $a->ocupacion_pct }}%</small>
+                                </td>
                             </tr>
-                            </thead>
-                            <tbody>
-                            @forelse($traza_items as $t)
-                                <tr>
-                                    <td class="font-weight-bold">{{ $t->codigo_lote_salida }}</td>
-                                    <td>{{ $t->codigo_lote_planta }}</td>
-                                    <td class="text-truncate" title="{{ $t->clientes }}">{{ $t->clientes }}</td>
-                                    <td>{{ number_format($t->peso_t,3) }}</td>
-                                    <td>{{ $t->rendimiento_pct }}</td>
-                                </tr>
-                            @empty
-                                <tr><td colspan="5" class="text-center text-muted">Sin datos</td></tr>
-                            @endforelse
-                            </tbody>
-                        </table>
+                        @empty
+                            <tr><td colspan="4" class="text-center text-muted">Sin almacenes</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    {{-- Últimos Envíos --}}
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header border-0">
+                <h3 class="card-title"><i class="fas fa-truck text-success mr-2"></i>Últimos Envíos</h3>
+                <div class="card-tools">
+                    <a href="{{ route('panel.logistica') }}" class="btn btn-tool btn-sm">
+                        <i class="fas fa-bars"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="card-body table-responsive p-0">
+                <table class="table table-striped table-valign-middle">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Conductor</th>
+                            <th>Toneladas</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($ultimos_envios as $e)
+                            <tr>
+                                <td>
+                                    <strong>{{ $e->codigo_envio }}</strong>
+                                    @if($e->vehiculo)
+                                        <br><small class="text-muted">{{ $e->vehiculo }}</small>
+                                    @endif
+                                </td>
+                                <td>{{ $e->transportista ?? 'Sin asignar' }}</td>
+                                <td>{{ number_format($e->toneladas, 2) }} t</td>
+                                <td>
+                                    @php
+                                        $badgeClass = match($e->estado) {
+                                            'EN_RUTA' => 'bg-primary',
+                                            'ENTREGADO' => 'bg-success',
+                                            'PENDIENTE' => 'bg-warning',
+                                            default => 'bg-secondary'
+                                        };
+                                    @endphp
+                                    <span class="badge {{ $badgeClass }}">{{ $e->estado }}</span>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="4" class="text-center text-muted">Sin envíos</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Órdenes y Lotes --}}
+<div class="row">
+    {{-- Órdenes de Envío Recientes --}}
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header border-0">
+                <h3 class="card-title"><i class="fas fa-clipboard-list text-warning mr-2"></i>Órdenes de Envío</h3>
+                <div class="card-tools">
+                    <a href="{{ route('ordenes-envio.index') }}" class="btn btn-tool btn-sm">
+                        <i class="fas fa-bars"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <ul class="products-list product-list-in-card pl-2 pr-2">
+                    @forelse($ultimas_ordenes as $o)
+                        <li class="item">
+                            <div class="product-img">
+                                @php
+                                    $iconClass = match($o->estado) {
+                                        'ENTREGADO' => 'bg-success',
+                                        'EN_RUTA' => 'bg-primary',
+                                        'CONDUCTOR_ASIGNADO' => 'bg-info',
+                                        'PENDIENTE' => 'bg-warning',
+                                        default => 'bg-secondary'
+                                    };
+                                @endphp
+                                <span class="btn btn-sm {{ $iconClass }} rounded-circle">
+                                    <i class="fas fa-shipping-fast"></i>
+                                </span>
+                            </div>
+                            <div class="product-info">
+                                <a href="{{ route('ordenes-envio.show', $o->orden_envio_id ?? 1) }}" class="product-title">
+                                    {{ $o->codigo_orden }}
+                                    @if($o->prioridad === 'URGENTE')
+                                        <span class="badge badge-danger float-right">URGENTE</span>
+                                    @else
+                                        <span class="badge badge-secondary float-right">{{ $o->estado }}</span>
+                                    @endif
+                                </a>
+                                <span class="product-description">
+                                    {{ $o->planta ?? 'N/A' }} → {{ $o->almacen ?? 'N/A' }}
+                                    @if($o->conductor)
+                                        | <i class="fas fa-user"></i> {{ $o->conductor }}
+                                    @endif
+                                </span>
+                            </div>
+                        </li>
+                    @empty
+                        <li class="item text-center text-muted py-3">Sin órdenes recientes</li>
+                    @endforelse
+                </ul>
+            </div>
+            <div class="card-footer text-center">
+                <a href="{{ route('ordenes-envio.create') }}" class="btn btn-sm btn-primary">
+                    <i class="fas fa-plus"></i> Nueva Orden
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    {{-- Últimos Lotes Empacados --}}
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header border-0">
+                <h3 class="card-title"><i class="fas fa-box text-danger mr-2"></i>Últimos Lotes Empacados</h3>
+                <div class="card-tools">
+                    <a href="{{ route('tx.planta.lotes-salida.index') }}" class="btn btn-tool btn-sm">
+                        <i class="fas fa-bars"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <ul class="products-list product-list-in-card pl-2 pr-2">
+                    @forelse($ultimos_lotes as $l)
+                        <li class="item">
+                            <div class="product-img">
+                                <span class="btn btn-sm bg-gradient-primary rounded-circle">
+                                    <i class="fas fa-box"></i>
+                                </span>
+                            </div>
+                            <div class="product-info">
+                                <span class="product-title">
+                                    {{ $l->codigo_lote_salida }}
+                                    <span class="badge badge-info float-right">{{ number_format($l->peso_t, 2) }} t</span>
+                                </span>
+                                <span class="product-description">
+                                    <span class="badge bg-secondary">{{ $l->sku }}</span>
+                                    | {{ $l->planta }}
+                                </span>
+                            </div>
+                        </li>
+                    @empty
+                        <li class="item text-center text-muted py-3">Sin lotes recientes</li>
+                    @endforelse
+                </ul>
+            </div>
+            <div class="card-footer text-center">
+                <a href="{{ route('trazabilidad.index') }}" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-search"></i> Ver Trazabilidad
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Acceso Rápido --}}
+<div class="row">
+    <div class="col-12">
+        <div class="card bg-gradient-dark">
+            <div class="card-header border-0">
+                <h3 class="card-title"><i class="fas fa-bolt mr-2"></i>Accesos Rápidos</h3>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-2 col-4 mb-3">
+                        <a href="{{ route('ordenes-envio.create') }}" class="btn btn-app bg-primary">
+                            <i class="fas fa-plus"></i> Nueva Orden
+                        </a>
+                    </div>
+                    <div class="col-md-2 col-4 mb-3">
+                        <a href="{{ route('trazabilidad.index') }}" class="btn btn-app bg-success">
+                            <i class="fas fa-route"></i> Trazabilidad
+                        </a>
+                    </div>
+                    <div class="col-md-2 col-4 mb-3">
+                        <a href="{{ route('vehiculos.index') }}" class="btn btn-app bg-info">
+                            <i class="fas fa-truck"></i> Vehículos
+                        </a>
+                    </div>
+                    <div class="col-md-2 col-4 mb-3">
+                        <a href="{{ route('cat.almacenes.index') }}" class="btn btn-app bg-warning">
+                            <i class="fas fa-warehouse"></i> Almacenes
+                        </a>
+                    </div>
+                    <div class="col-md-2 col-4 mb-3">
+                        <a href="{{ route('comercial.pedidos.index') }}" class="btn btn-app bg-danger">
+                            <i class="fas fa-shopping-cart"></i> Pedidos
+                        </a>
+                    </div>
+                    <div class="col-md-2 col-4 mb-3">
+                        <a href="{{ route('panel.planta') }}" class="btn btn-app bg-secondary">
+                            <i class="fas fa-industry"></i> Planta
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-xl-6">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h3 class="card-title mb-0">Inventario por almacén / SKU</h3>
-                    <a href="{{ route('cat.almacenes.index') }}" class="btn btn-sm btn-outline-dark">Almacenes</a>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead class="thead-dark">
-                            <tr>
-                                <th>Almacén</th>
-                                <th>SKU</th>
-                                <th>Stock (t)</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            @forelse($stock_items as $s)
-                                <tr>
-                                    <td>{{ $s->codigo_almacen }}</td>
-                                    <td>{{ $s->sku }}</td>
-                                    <td>{{ number_format($s->stock_t,3) }}</td>
-                                </tr>
-                            @empty
-                                <tr><td colspan="3" class="text-center text-muted">Sin datos</td></tr>
-                            @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
+</div>
 
-    <div class="row">
-        <div class="col-lg-7">
-            <div class="card mb-4">
-                <div class="card-header"><h3 class="card-title mb-0">Rendimiento y Proceso (demo)</h3></div>
-                <div class="card-body"><div id="revenue-chart"></div></div>
-            </div>
-        </div>
-        <div class="col-lg-5">
-            <div class="card">
-                <div class="card-header"><h3 class="card-title mb-0">Trazabilidad por tipo (demo)</h3></div>
-                <div class="card-body"><div id="trace-donut" style="height:260px"></div></div>
-            </div>
-        </div>
-    </div>
+{{-- Animate.css CDN --}}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 
-    {{-- Cargas de librerías para charts (CDN) --}}
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/apexcharts@3.49.1/dist/apexcharts.css" />
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.49.1"></script>
-    <script>
-        const salesOptions = {
-            series: [
-                { name: 'Cosechado (ton)', data: [120, 150, 180, 140, 210, 190, 220] },
-                { name: 'Procesado (ton)', data: [95, 130, 160, 130, 195, 175, 205] }
-            ],
-            chart: { height: 300, type: 'area', toolbar: { show: false } },
-            legend: { show: true },
-            colors: ['#000', '#6c757d'],
-            dataLabels: { enabled: false },
-            stroke: { curve: 'smooth' },
-            xaxis: { type: 'datetime', categories: ['2025-01-01','2025-02-01','2025-03-01','2025-04-01','2025-05-01','2025-06-01','2025-07-01'] },
-            yaxis: { title: { text: 'Toneladas' } },
-            tooltip: { x: { format: 'MMMM yyyy' } }
+{{-- Chart.js --}}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gráfico de Envíos por Estado (Donut)
+    const enviosData = @json($envios_por_estado);
+    const enviosLabels = enviosData.map(e => {
+        // Hacer los labels más legibles
+        const labels = {
+            'PENDIENTE': 'Pendiente',
+            'EN_RUTA': 'En Ruta',
+            'ENTREGADO': 'Entregado',
+            'PROGRAMADO': 'Programado',
+            'CANCELADO': 'Cancelado'
         };
-        new ApexCharts(document.querySelector('#revenue-chart'), salesOptions).render();
+        return labels[e.estado] || e.estado;
+    });
+    const enviosValues = enviosData.map(e => parseInt(e.cantidad));
+    
+    // Colores por estado
+    const estadoColores = {
+        'Pendiente': '#ffc107',
+        'En Ruta': '#007bff',
+        'Entregado': '#28a745',
+        'Programado': '#17a2b8',
+        'Cancelado': '#dc3545'
+    };
+    const enviosColores = enviosLabels.map(l => estadoColores[l] || '#6c757d');
+    
+    new Chart(document.getElementById('enviosEstadoChart'), {
+        type: 'doughnut',
+        data: {
+            labels: enviosLabels.length > 0 ? enviosLabels : ['Sin envíos'],
+            datasets: [{
+                data: enviosValues.length > 0 ? enviosValues : [1],
+                backgroundColor: enviosColores.length > 0 ? enviosColores : ['#6c757d'],
+                borderWidth: 3,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        font: { size: 12 }
+                    }
+                },
+                title: {
+                    display: true,
+                    text: 'Total: ' + enviosValues.reduce((a, b) => a + b, 0) + ' envíos',
+                    font: { size: 14, weight: 'normal' },
+                    padding: { bottom: 10 }
+                }
+            },
+            animation: {
+                animateScale: true,
+                animateRotate: true
+            }
+        }
+    });
+    
+    // Gráfico de Producción Mensual (Barras Agrupadas)
+    const produccionData = @json($produccion_mensual);
+    const produccionLabels = produccionData.map(p => p.mes);
+    const produccionLotes = produccionData.map(p => parseInt(p.lotes));
+    const produccionToneladas = produccionData.map(p => parseFloat(p.toneladas) || 0);
+    
+    new Chart(document.getElementById('produccionMensualChart'), {
+        type: 'bar',
+        data: {
+            labels: produccionLabels.length > 0 ? produccionLabels : ['Sin datos'],
+            datasets: [{
+                label: 'Lotes Procesados',
+                data: produccionLotes.length > 0 ? produccionLotes : [0],
+                backgroundColor: '#007bff',
+                borderColor: '#0056b3',
+                borderWidth: 2,
+                borderRadius: 8,
+                barPercentage: 0.8
+            }, {
+                label: 'Toneladas Empacadas',
+                data: produccionToneladas.length > 0 ? produccionToneladas : [0],
+                backgroundColor: '#28a745',
+                borderColor: '#1e7e34',
+                borderWidth: 2,
+                borderRadius: 8,
+                barPercentage: 0.8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 15,
+                        font: { size: 12 }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        display: false
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    },
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            },
+            animation: {
+                duration: 1000,
+                easing: 'easeOutQuart'
+            }
+        }
+    });
 
-        new ApexCharts(document.querySelector('#trace-donut'), {
-            series: [52, 31, 17],
-            chart: { type: 'donut', height: 260 },
-            labels: ['Lote', 'Camión', 'Batch planta'],
-            colors: ['#000', '#6c757d', '#adb5bd'],
-            dataLabels: { enabled: true },
-            legend: { position: 'bottom' }
-        }).render();
-    </script>
+});
+</script>
+
+
+<style>
+/* Animaciones suaves en hover */
+.info-box, .small-box {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.info-box:hover, .small-box:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+/* Botones de app */
+.btn-app {
+    transition: transform 0.2s ease;
+}
+
+.btn-app:hover {
+    transform: scale(1.05);
+}
+
+/* Productos list hover */
+.products-list .item {
+    transition: background-color 0.2s ease;
+}
+
+.products-list .item:hover {
+    background-color: #f8f9fa;
+}
+
+/* Progress bars animados */
+.progress-bar {
+    transition: width 1s ease-in-out;
+}
+
+/* Card headers */
+.card-header h3.card-title {
+    font-weight: 600;
+}
+</style>
 @endsection
-
-
