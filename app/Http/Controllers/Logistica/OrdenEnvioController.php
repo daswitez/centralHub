@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
+use Barryvdh\DomPDF\Facade\Pdf;
+
 
 class OrdenEnvioController extends Controller
 {
@@ -269,5 +271,78 @@ class OrdenEnvioController extends Controller
             ->update(['estado' => 'EN_USO']);
 
         return true;
+    }
+
+    /**
+     * Exportar Guía de Remisión a PDF
+     */
+    public function exportPdf(int $id)
+    {
+        $orden = DB::table('logistica.orden_envio as oe')
+            ->select([
+                'oe.*',
+                'p.nombre as planta_nombre',
+                'p.codigo_planta',
+                'p.direccion as planta_direccion',
+                'a.nombre as almacen_nombre',
+                'a.codigo_almacen',
+                'z.nombre as zona_nombre',
+                't.nombre as conductor_nombre',
+                't.telefono as conductor_telefono',
+                'v.placa as vehiculo_placa',
+                'v.marca as vehiculo_marca',
+                'v.modelo as vehiculo_modelo',
+                'v.capacidad_t as vehiculo_capacidad'
+            ])
+            ->leftJoin('cat.planta as p', 'p.planta_id', '=', 'oe.planta_origen_id')
+            ->leftJoin('cat.almacen as a', 'a.almacen_id', '=', 'oe.almacen_destino_id')
+            ->leftJoin('almacen.zona as z', 'z.zona_id', '=', 'oe.zona_destino_id')
+            ->leftJoin('cat.transportista as t', 't.transportista_id', '=', 'oe.transportista_id')
+            ->leftJoin('cat.vehiculo as v', 'v.vehiculo_id', '=', 'oe.vehiculo_id')
+            ->where('oe.orden_envio_id', $id)
+            ->first();
+
+        if (!$orden) {
+            abort(404);
+        }
+
+        // Obtener lotes asociados
+        $lotes = DB::table('planta.lotesalida')
+            ->where('lote_salida_id', $orden->lote_salida_id)
+            ->get();
+
+        // Datos para la vista
+        $planta = (object)[
+            'nombre' => $orden->planta_nombre,
+            'codigo_planta' => $orden->codigo_planta,
+            'direccion' => $orden->planta_direccion ?? 'N/A'
+        ];
+
+        $almacen = (object)[
+            'nombre' => $orden->almacen_nombre,
+            'codigo_almacen' => $orden->codigo_almacen
+        ];
+
+        $zona = $orden->zona_nombre ? (object)['nombre' => $orden->zona_nombre] : null;
+
+        $transportista = (object)[
+            'nombre' => $orden->conductor_nombre,
+            'telefono' => $orden->conductor_telefono
+        ];
+
+        $vehiculo = (object)[
+            'placa' => $orden->vehiculo_placa,
+            'marca' => $orden->vehiculo_marca,
+            'modelo' => $orden->vehiculo_modelo,
+            'capacidad_t' => $orden->vehiculo_capacidad
+        ];
+
+        $pdf = Pdf::loadView('pdf.orden_envio', compact(
+            'orden', 'planta', 'almacen', 'zona', 'transportista', 'vehiculo', 'lotes'
+        ));
+
+        $pdf->setPaper('letter', 'portrait');
+
+        return $pdf->download("guia_remision_{$orden->codigo_orden}.pdf");
     }
 }

@@ -138,8 +138,11 @@
     
     {{-- Timeline de Trazabilidad --}}
     <div class="card">
-        <div class="card-header bg-gradient-primary">
+        <div class="card-header bg-gradient-primary d-flex justify-content-between align-items-center">
             <h3 class="card-title"><i class="fas fa-stream mr-2"></i>Cadena de Trazabilidad</h3>
+            <button id="btnExportarPdf" class="btn btn-sm btn-light" onclick="exportarPdf()">
+                <i class="fas fa-file-pdf text-danger"></i> Exportar PDF
+            </button>
         </div>
         <div class="card-body">
             <div class="timeline" id="timelineContainer">
@@ -151,6 +154,7 @@
     {{-- Tarjetas de Detalle --}}
     <div class="row" id="detallesCards"></div>
 </div>
+
 
 {{-- Estilos adicionales --}}
 <style>
@@ -371,10 +375,15 @@ async function buscarTrazabilidad() {
         }
 
         const data = await response.json();
+        
+        // Guardar última búsqueda para exportar PDF
+        ultimaBusqueda = { tipo: tipo, codigo: codigo };
+        
         renderizarTrazabilidad(data);
         
         document.getElementById('loadingOverlay').style.display = 'none';
         document.getElementById('resultadosTrazabilidad').style.display = 'block';
+
 
     } catch (error) {
         console.error('Error:', error);
@@ -532,6 +541,24 @@ function formatLabel(key) {
         'observaciones': 'Observaciones'
     };
     return labels[key] || key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+}
+
+// Variables para guardar la última búsqueda
+let ultimaBusqueda = { tipo: '', codigo: '' };
+
+// Función para exportar PDF
+function exportarPdf() {
+    if (!ultimaBusqueda.tipo || !ultimaBusqueda.codigo) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Sin datos',
+            text: 'Primero realice una búsqueda de trazabilidad'
+        });
+        return;
+    }
+    
+    // Abrir en nueva pestaña la URL del PDF
+    window.open(`/trazabilidad/pdf/${ultimaBusqueda.tipo}/${encodeURIComponent(ultimaBusqueda.codigo)}`, '_blank');
 }
 </script>
 

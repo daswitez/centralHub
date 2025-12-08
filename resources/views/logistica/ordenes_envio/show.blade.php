@@ -8,11 +8,17 @@
             <h1 class="m-0">{{ $orden->codigo_orden }}</h1>
             <p class="text-muted mb-0">Detalle de Orden de Envío</p>
         </div>
-        <a href="{{ route('ordenes-envio.index') }}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Volver
-        </a>
+        <div>
+            <a href="{{ route('ordenes-envio.pdf', $orden->orden_envio_id) }}" class="btn btn-danger mr-2" target="_blank">
+                <i class="fas fa-file-pdf"></i> Exportar PDF
+            </a>
+            <a href="{{ route('ordenes-envio.index') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Volver
+            </a>
+        </div>
     </div>
 @endsection
+
 
 @section('content')
     <div class="row">

@@ -135,6 +135,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/trazabilidad/{tipo}/{codigo}', [TrazabilidadController::class, 'getDatosCompletos']);
     });
     
+    // Exportar PDF de trazabilidad
+    Route::get('/trazabilidad/pdf/{tipo}/{codigo}', [TrazabilidadController::class, 'exportPdf'])
+        ->name('trazabilidad.pdf');
+    
     // Almacenes (show adicional)
     Route::get('/cat/almacenes/{id}', [AlmacenController::class, 'show'])->name('cat.almacenes.show');
     
@@ -155,6 +159,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/crear', [\App\Http\Controllers\Logistica\OrdenEnvioController::class, 'create'])->name('create');
         Route::post('/', [\App\Http\Controllers\Logistica\OrdenEnvioController::class, 'store'])->name('store');
         Route::get('/{id}', [\App\Http\Controllers\Logistica\OrdenEnvioController::class, 'show'])->name('show');
+        Route::get('/{id}/pdf', [\App\Http\Controllers\Logistica\OrdenEnvioController::class, 'exportPdf'])->name('pdf');
         Route::post('/{id}/asignar-conductor', [\App\Http\Controllers\Logistica\OrdenEnvioController::class, 'asignarConductor'])->name('asignar-conductor');
         Route::post('/{id}/cambiar-estado', [\App\Http\Controllers\Logistica\OrdenEnvioController::class, 'cambiarEstado'])->name('cambiar-estado');
     });
