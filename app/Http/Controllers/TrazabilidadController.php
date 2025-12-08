@@ -102,17 +102,21 @@ class TrazabilidadController extends Controller
      */
     private function trazabilidadDesdeCampo(string $codigo): array
     {
-        // 1. Obtener lote de campo
+        // 1. Obtener lote de campo (municipio viene del productor)
         $loteCampo = DB::table('campo.lotecampo as lc')
             ->select([
                 'lc.*',
                 'p.nombre as productor_nombre',
+                'p.telefono as productor_telefono',
                 'v.nombre_comercial as variedad_nombre',
-                'm.nombre as municipio_nombre'
+                'v.aptitud as variedad_aptitud',
+                'm.nombre as municipio_nombre',
+                'd.nombre as departamento_nombre'
             ])
             ->leftJoin('campo.productor as p', 'p.productor_id', '=', 'lc.productor_id')
             ->leftJoin('cat.variedadpapa as v', 'v.variedad_id', '=', 'lc.variedad_id')
-            ->leftJoin('cat.municipio as m', 'm.municipio_id', '=', 'lc.municipio_id')
+            ->leftJoin('cat.municipio as m', 'm.municipio_id', '=', 'p.municipio_id')
+            ->leftJoin('cat.departamento as d', 'd.departamento_id', '=', 'm.departamento_id')
             ->where('lc.codigo_lote_campo', $codigo)
             ->first();
 
@@ -122,7 +126,7 @@ class TrazabilidadController extends Controller
 
         // 2. Lotes de planta asociados
         $lotesPlanta = DB::select("
-            SELECT lp.*, pl.nombre as planta_nombre
+            SELECT lp.*, pl.nombre as planta_nombre, pl.codigo_planta
             FROM planta.loteplanta_entradacampo lpe
             JOIN planta.loteplanta lp ON lp.lote_planta_id = lpe.lote_planta_id
             JOIN cat.planta pl ON pl.planta_id = lp.planta_id
@@ -145,15 +149,33 @@ class TrazabilidadController extends Controller
         $envios = [];
         foreach ($lotesSalida as $ls) {
             $enviosData = DB::select("
-                SELECT DISTINCT e.*, ed.cantidad_t
+                SELECT DISTINCT e.*, ed.cantidad_t,
+                       t.nombre as transportista_nombre,
+                       v.placa as vehiculo_placa
                 FROM logistica.enviodetalle ed
                 JOIN logistica.envio e ON e.envio_id = ed.envio_id
+                LEFT JOIN cat.transportista t ON t.transportista_id = e.transportista_id
+                LEFT JOIN cat.vehiculo v ON v.vehiculo_id = e.vehiculo_id
                 WHERE ed.lote_salida_id = ?
             ", [$ls->lote_salida_id]);
             $envios = array_merge($envios, $enviosData);
         }
 
-return [
+        // 5. Recepciones en almacén
+        $recepciones = [];
+        foreach ($envios as $env) {
+            $recData = DB::table('almacen.recepcion as r')
+                ->select(['r.*', 'a.nombre as almacen_nombre', 'z.nombre as zona_nombre'])
+                ->leftJoin('cat.almacen as a', 'a.almacen_id', '=', 'r.almacen_id')
+                ->leftJoin('almacen.zona as z', 'z.zona_id', '=', 'r.zona_id')
+                ->where('r.envio_id', $env->envio_id)
+                ->first();
+            if ($recData) {
+                $recepciones[] = $recData;
+            }
+        }
+
+        return [
             'etapas' => [
                 'campo' => [
                     'codigo' => $loteCampo->codigo_lote_campo,
@@ -161,9 +183,13 @@ return [
                     'fecha' => $loteCampo->fecha_cosecha,
                     'detalles' => [
                         'productor' => $loteCampo->productor_nombre,
+                        'telefono_productor' => $loteCampo->productor_telefono ?? 'N/A',
                         'variedad' => $loteCampo->variedad_nombre,
-                        'municipio' => $loteCampo->municipio_nombre,
-                        'superficie_ha' => $loteCampo->superficie_ha
+                        'aptitud' => $loteCampo->variedad_aptitud ?? 'N/A',
+                        'ubicacion' => ($loteCampo->municipio_nombre ?? '') . ', ' . ($loteCampo->departamento_nombre ?? ''),
+                        'superficie' => ($loteCampo->superficie_ha ?? 0) . ' ha',
+                        'peso_cosechado' => ($loteCampo->peso_t ?? 0) . ' toneladas',
+                        'fecha_siembra' => $loteCampo->fecha_siembra ?? 'N/A'
                     ]
                 ],
                 'planta' => array_map(function($lp) {
@@ -172,36 +198,59 @@ return [
                         'estado' => 'completed',
                         'fecha' => $lp->fecha_inicio,
                         'detalles' => [
-                            'planta' => $lp->planta_nombre,
-                            'rendimiento_pct' => $lp->rendimiento_pct
+                            'planta' => $lp->planta_nombre . ' (' . $lp->codigo_planta . ')',
+                            'rendimiento' => ($lp->rendimiento_pct ?? 0) . '%',
+                            'fecha_inicio' => $lp->fecha_inicio,
+                            'fecha_fin' => $lp->fecha_fin ?? 'En proceso'
                         ]
                     ];
                 }, $lotesPlanta),
+
                 'salida' => array_map(function($ls) {
                     return [
                         'codigo' => $ls->codigo_lote_salida,
                         'estado' => 'completed',
                         'fecha' => $ls->fecha_empaque,
                         'detalles' => [
-                            'sku' => $ls->sku,
-                            'peso_t' => $ls->peso_t
+                            'producto' => $ls->sku,
+                            'peso_neto' => ($ls->peso_t ?? 0) . ' toneladas',
+                            'lote_origen' => $ls->codigo_lote_planta ?? 'N/A',
+                            'fecha_empaque' => $ls->fecha_empaque,
+                            'fecha_vencimiento' => $ls->fecha_vencimiento ?? 'N/A'
                         ]
                     ];
                 }, $lotesSalida),
                 'envio' => array_map(function($e) {
                     return [
                         'codigo' => $e->codigo_envio,
-                        'estado' => strtolower($e->estado),
+                        'estado' => strtolower($e->estado ?? 'pending'),
                         'fecha' => $e->fecha_salida,
                         'detalles' => [
-                            'estado' => $e->estado,
-                            'cantidad_t' => $e->cantidad_t
+                            'estado_envio' => $e->estado ?? 'PENDIENTE',
+                            'cantidad' => ($e->cantidad_t ?? 0) . ' toneladas',
+                            'conductor' => $e->transportista_nombre ?? 'Sin asignar',
+                            'vehiculo' => $e->vehiculo_placa ?? 'Sin asignar',
+                            'fecha_salida' => $e->fecha_salida ?? 'Pendiente'
                         ]
                     ];
-                }, $envios)
+                }, $envios),
+                'almacen' => array_map(function($r) {
+                    return [
+                        'codigo' => 'REC-' . $r->recepcion_id,
+                        'estado' => 'completed',
+                        'fecha' => $r->fecha_recepcion,
+                        'detalles' => [
+                            'almacen' => $r->almacen_nombre ?? 'N/A',
+                            'zona' => $r->zona_nombre ?? 'Sin asignar',
+                            'fecha_recepcion' => $r->fecha_recepcion,
+                            'observaciones' => $r->observacion ?? 'Sin observaciones'
+                        ]
+                    ];
+                }, $recepciones)
             ]
         ];
     }
+
 
     /**
      * Trazabilidad desde Lote Planta
@@ -460,12 +509,15 @@ return [
                 }, $lotesSalida),
                 'envio' => [[
                     'codigo' => $envio->codigo_envio,
-                    'estado' => strtolower($envio->estado),
+                    'estado' => strtolower($envio->estado ?? 'pending'),
                     'fecha' => $envio->fecha_salida,
                     'detalles' => [
-                        'estado' => $envio->estado
+                        'estado' => $envio->estado ?? 'PENDIENTE',
+                        'transportista' => $envio->transportista_id ? 'Asignado' : 'Sin asignar',
+                        'vehiculo' => $envio->vehiculo_id ? 'Asignado' : 'Sin asignar'
                     ]
                 ]]
+
             ]
         ];
     }

@@ -3,308 +3,332 @@
 @section('page_title', 'Trazabilidad')
 
 @section('page_header')
-    <div>
-        <h1 class="m-0">Trazabilidad Completa</h1>
-        <p class="text-muted mb-0">Seguimiento de productos desde el campo hasta el cliente</p>
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="m-0"><i class="fas fa-route text-primary"></i> Trazabilidad de Productos</h1>
+            <p class="text-muted mb-0">Seguimiento completo desde el campo hasta el cliente</p>
+        </div>
     </div>
 @endsection
 
 @section('content')
-    <div class="card">
-        <div class="card-header">
-            <h3 class="card-title">Buscar Trazabilidad</h3>
+    {{-- Panel de Búsqueda --}}
+    <div class="card card-primary card-outline shadow-sm">
+        <div class="card-header bg-gradient-primary text-white">
+            <h3 class="card-title"><i class="fas fa-search"></i> Buscar Trazabilidad</h3>
         </div>
         <div class="card-body">
-            <div class="row">
+            <div class="row align-items-end">
                 <div class="col-md-4">
-                    <div class="form-group">
-                        <label for="tipoBusqueda">Tipo de Búsqueda *</label>
-                        <select id="tipoBusqueda" class="form-control" onchange="actualizarDropdown()">
-                            <option value="campo" selected>🌱 Lote de Campo</option>
-                            <option value="planta">🏭 Lote de Planta</option>
-                            <option value="salida">📦 Lote de Salida/Empaque</option>
-                            <option value="orden_envio">🚛 Orden de Envío (Planta→Almacén)</option>
-                            <option value="envio">📍 Envío/Transporte</option>
-                            <option value="pedido">📄 Pedido Cliente</option>
-                        </select>
-                    </div>
+                    <label class="font-weight-bold">¿Qué deseas rastrear?</label>
+                    <select id="tipoBusqueda" class="form-control form-control-lg" onchange="actualizarDropdown()">
+                        <option value="campo">🌱 Lote de Campo (Cosecha)</option>
+                        <option value="planta">🏭 Lote de Planta (Procesamiento)</option>
+                        <option value="salida">📦 Lote de Salida (Empaque)</option>
+                        <option value="orden_envio">🚛 Orden de Envío (Planta → Almacén)</option>
+                        <option value="envio">📍 Envío (Transporte)</option>
+                        <option value="pedido">📄 Pedido (Cliente)</option>
+                    </select>
                 </div>
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="codigoBusqueda">Seleccionar *</label>
-                        
-                        {{-- Dropdown para Lote Campo (visible por defecto) --}}
-                        <select id="dropdown_campo" class="form-control dropdown-lote">
-                            <option value="">Seleccione lote de campo...</option>
-                            @foreach($lotesCampo as $lc)
-                                <option value="{{ $lc->codigo_lote_campo }}">
-                                    {{ $lc->codigo_lote_campo }} - 
-                                    {{ \Carbon\Carbon::parse($lc->fecha_cosecha)->format('d/m/Y') }}
-                                </option>
-                            @endforeach
-                        </select>
+                <div class="col-md-5">
+                    <label class="font-weight-bold">Seleccione el código</label>
+                    
+                    {{-- Dropdown para Lote Campo --}}
+                    <select id="dropdown_campo" class="form-control form-control-lg dropdown-lote">
+                        <option value="">-- Seleccione lote de campo --</option>
+                        @foreach($lotesCampo as $lc)
+                            <option value="{{ $lc->codigo_lote_campo }}">
+                                {{ $lc->codigo_lote_campo }} ({{ \Carbon\Carbon::parse($lc->fecha_cosecha)->format('d M Y') }})
+                            </option>
+                        @endforeach
+                    </select>
 
-                        {{-- Dropdown para Lote Planta --}}
-                        <select id="dropdown_planta" class="form-control dropdown-lote" style="display: none;">
-                            <option value="">Seleccione lote de planta...</option>
-                            @foreach($lotesPlanta as $lp)
-                                <option value="{{ $lp->codigo_lote_planta }}">
-                                    {{ $lp->codigo_lote_planta }} - 
-                                    {{ \Carbon\Carbon::parse($lp->fecha_inicio)->format('d/m/Y') }}
-                                </option>
-                            @endforeach
-                        </select>
+                    {{-- Dropdown para Lote Planta --}}
+                    <select id="dropdown_planta" class="form-control form-control-lg dropdown-lote" style="display: none;">
+                        <option value="">-- Seleccione lote de planta --</option>
+                        @foreach($lotesPlanta as $lp)
+                            <option value="{{ $lp->codigo_lote_planta }}">
+                                {{ $lp->codigo_lote_planta }} ({{ \Carbon\Carbon::parse($lp->fecha_inicio)->format('d M Y') }})
+                            </option>
+                        @endforeach
+                    </select>
 
-                        {{-- Dropdown para Lote Salida --}}
-                        <select id="dropdown_salida" class="form-control dropdown-lote" style="display: none;">
-                            <option value="">Seleccione lote de salida...</option>
-                            @foreach($lotesSalida as $ls)
-                                <option value="{{ $ls->codigo_lote_salida }}">
-                                    {{ $ls->codigo_lote_salida }} - 
-                                    {{ \Carbon\Carbon::parse($ls->fecha_empaque)->format('d/m/Y') }}
-                                </option>
-                            @endforeach
-                        </select>
+                    {{-- Dropdown para Lote Salida --}}
+                    <select id="dropdown_salida" class="form-control form-control-lg dropdown-lote" style="display: none;">
+                        <option value="">-- Seleccione lote de salida --</option>
+                        @foreach($lotesSalida as $ls)
+                            <option value="{{ $ls->codigo_lote_salida }}">
+                                {{ $ls->codigo_lote_salida }} ({{ \Carbon\Carbon::parse($ls->fecha_empaque)->format('d M Y') }})
+                            </option>
+                        @endforeach
+                    </select>
 
-                        {{-- Dropdown para Orden de Envío (NUEVO) --}}
-                        <select id="dropdown_orden_envio" class="form-control dropdown-lote" style="display: none;">
-                            <option value="">Seleccione orden de envío...</option>
-                            @foreach($ordenesEnvio ?? [] as $oe)
-                                <option value="{{ $oe->codigo_orden }}">
-                                    {{ $oe->codigo_orden }} - 
-                                    {{ \Carbon\Carbon::parse($oe->fecha_creacion)->format('d/m/Y') }}
-                                </option>
-                            @endforeach
-                        </select>
+                    {{-- Dropdown para Orden Envío --}}
+                    <select id="dropdown_orden_envio" class="form-control form-control-lg dropdown-lote" style="display: none;">
+                        <option value="">-- Seleccione orden de envío --</option>
+                        @foreach($ordenesEnvio ?? [] as $oe)
+                            <option value="{{ $oe->codigo_orden }}">
+                                {{ $oe->codigo_orden }} ({{ \Carbon\Carbon::parse($oe->fecha_creacion)->format('d M Y') }})
+                            </option>
+                        @endforeach
+                    </select>
 
-                        {{-- Dropdown para Envío --}}
-                        <select id="dropdown_envio" class="form-control dropdown-lote" style="display: none;">
-                            <option value="">Seleccione envío...</option>
-                            @foreach($envios as $env)
-                                <option value="{{ $env->codigo_envio }}">
-                                    {{ $env->codigo_envio }} - 
-                                    {{ \Carbon\Carbon::parse($env->fecha_salida)->format('d/m/Y') }}
-                                </option>
-                            @endforeach
-                        </select>
+                    {{-- Dropdown para Envío --}}
+                    <select id="dropdown_envio" class="form-control form-control-lg dropdown-lote" style="display: none;">
+                        <option value="">-- Seleccione envío --</option>
+                        @foreach($envios as $env)
+                            <option value="{{ $env->codigo_envio }}">
+                                {{ $env->codigo_envio }} ({{ \Carbon\Carbon::parse($env->fecha_salida)->format('d M Y') }})
+                            </option>
+                        @endforeach
+                    </select>
 
-                        {{-- Dropdown para Pedido --}}
-                        <select id="dropdown_pedido" class="form-control dropdown-lote" style="display: none;">
-                            <option value="">Seleccione pedido...</option>
-                            @foreach($pedidos as $ped)
-                                <option value="{{ $ped->codigo_pedido }}">
-                                    {{ $ped->codigo_pedido }} - 
-                                    {{ \Carbon\Carbon::parse($ped->fecha_pedido)->format('d/m/Y') }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
+                    {{-- Dropdown para Pedido --}}
+                    <select id="dropdown_pedido" class="form-control form-control-lg dropdown-lote" style="display: none;">
+                        <option value="">-- Seleccione pedido --</option>
+                        @foreach($pedidos as $ped)
+                            <option value="{{ $ped->codigo_pedido }}">
+                                {{ $ped->codigo_pedido }} ({{ \Carbon\Carbon::parse($ped->fecha_pedido)->format('d M Y') }})
+                            </option>
+                        @endforeach
+                    </select>
                 </div>
-                <div class="col-md-2">
-                    <div class="form-group">
-                        <label>&nbsp;</label>
-                        <button type="button" 
-                                class="btn btn-primary btn-block" 
-                                onclick="buscarTrazabilidad()">
-                            <i class="fas fa-search"></i> Buscar
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="alert alert-info">
-                <i class="fas fa-info-circle"></i>
-                <strong>Trazabilidad Completa:</strong> Al buscar un lote, se mostrará toda la cadena de producción:
-                <ul class="mb-0 mt-2">
-                    <li><strong>Campo</strong> → De dónde proviene el producto</li>
-                    <li><strong>Planta</strong> → Dónde fue procesado</li>
-                    <li><strong>Empaque</strong> → Cómo fue empacado (SKU, peso)</li>
-                    <li><strong>Envío</strong> → Transporte logístico</li>
-                    <li><strong>Pedido</strong> → A qué cliente fue vendido</li>
-                </ul>
-            </div>
-        </div>
-    </div>
-
-    {{-- Resultados de Trazabilidad --}}
-    <div id="resultadosTrazabilidad" style="display: none;">
-        <div class="card">
-            <div class="card-header bg-primary">
-                <h3 class="card-title">Flujo de Trazabilidad</h3>
-            </div>
-            <div class="card-body">
-                {{-- Flow Diagram --}}
-                <div id="flowDiagram" class="flow-container">
-                    {{-- Se genera dinámicamente con JavaScript --}}
-                </div>
-            </div>
-        </div>
-
-        {{-- Detalles por Etapa --}}
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Detalles</h3>
-            </div>
-            <div class="card-body">
-                <div id="detallesEtapas">
-                    {{-- Se genera dinámicamente --}}
+                <div class="col-md-3">
+                    <button type="button" class="btn btn-primary btn-lg btn-block" onclick="buscarTrazabilidad()">
+                        <i class="fas fa-search"></i> Rastrear Producto
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
     {{-- Loading Spinner --}}
-    <div id="loadingSpinner" class="text-center" style="display: none;">
-        <i class="fas fa-spinner fa-spin fa-3x"></i>
-        <p class="mt-2">Cargando trazabilidad...</p>
+    <div id="loadingSpinner" style="display: none;" class="text-center py-5">
+        <div class="spinner-grow text-primary" style="width: 3rem; height: 3rem;"></div>
+        <p class="mt-3 text-muted">Buscando información de trazabilidad...</p>
     </div>
 
     {{-- Error Alert --}}
     <div id="errorAlert" class="alert alert-danger" style="display: none;">
-        <i class="fas fa-exclamation-triangle"></i>
-        <span id="errorMessage"></span>
+        <i class="fas fa-exclamation-triangle"></i> 
+        <strong>Error:</strong> <span id="errorMessage"></span>
     </div>
-@endsection
+
+    {{-- Resultados de Trazabilidad --}}
+    <div id="resultadosTrazabilidad" style="display: none;">
+        
+        {{-- Timeline Visual --}}
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h4 class="mb-0"><i class="fas fa-stream text-primary"></i> Cadena de Trazabilidad</h4>
+            </div>
+            <div class="card-body">
+                <div id="timelineContainer" class="timeline-horizontal"></div>
+            </div>
+        </div>
+
+        {{-- Detalles por Etapa --}}
+        <div class="row" id="detallesContainer"></div>
+    </div>
 
 <style>
-    .flow-container {
-        display: flex;
-        align-items: center;
-        padding: 2rem;
-        overflow-x: auto;
-        gap: 1rem;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 8px;
-    }
 
-    .stage {
-        min-width: 180px;
-        padding: 1.5rem;
-        border-radius: 12px;
-        background: white;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        position: relative;
-        transition: all 0.3s ease;
-    }
+/* Timeline Horizontal Moderna */
+.timeline-horizontal {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 20px 0;
+    position: relative;
+    overflow-x: auto;
+}
 
-    .stage:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 6px 20px rgba(0,0,0,0.25);
-    }
+.timeline-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    min-width: 140px;
+    position: relative;
+    z-index: 1;
+}
 
-    .stage::after {
-        content: '→';
-        position: absolute;
-        right: -1.5rem;
-        top: 50%;
-        transform: translateY(-50%);
-        font-size: 2rem;
-        color: white;
-        font-weight: bold;
-    }
+.timeline-step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 40px;
+    left: 50%;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, #28a745, #17a2b8);
+    z-index: -1;
+}
 
-    .stage:last-child::after {
-        display: none;
-    }
+.timeline-step.pending:not(:last-child)::after {
+    background: #dee2e6;
+}
 
-    .stage.completed {
-        border-left: 5px solid #28a745;
-    }
+.step-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+    transition: transform 0.3s ease;
+}
 
-    .stage.pending {
-        border-left: 5px solid #ffc107;
-    }
+.step-icon:hover {
+    transform: scale(1.1);
+}
 
-    .stage.active {
-        border-left: 5px solid #007bff;
-        animation: pulse 2s infinite;
-    }
+.timeline-step.pending .step-icon {
+    background: linear-gradient(135deg, #6c757d, #adb5bd);
+    box-shadow: 0 4px 15px rgba(108, 117, 125, 0.2);
+}
 
-    @keyframes pulse {
-        0%, 100% { box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-        50% { box-shadow: 0 4px 20px rgba(0,123,255,0.5); }
-    }
+.timeline-step.en_ruta .step-icon,
+.timeline-step.conductor_asignado .step-icon {
+    background: linear-gradient(135deg, #007bff, #17a2b8);
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+}
 
-    .stage-icon {
-        font-size: 2rem;
-        text-align: center;
-        margin-bottom: 0.5rem;
-    }
+.step-info {
+    text-align: center;
+    margin-top: 15px;
+}
 
-    .stage-name {
-        font-weight: bold;
-        font-size: 0.9rem;
-        color: #333;
-        text-align: center;
-        margin-bottom: 0.3rem;
-    }
+.step-name {
+    font-weight: bold;
+    color: #495057;
+    font-size: 0.95rem;
+}
 
-    .stage-code {
-        font-size: 0.85rem;
-        color: #666;
-        text-align: center;
-        font-family: monospace;
-    }
+.step-code {
+    font-family: 'Courier New', monospace;
+    background: #e9ecef;
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    color: #495057;
+    margin-top: 5px;
+    display: inline-block;
+}
 
-    .stage-date {
-        font-size: 0.75rem;
-        color: #999;
-        text-align: center;
-        margin-top: 0.3rem;
-    }
+.step-date {
+    font-size: 0.8rem;
+    color: #6c757d;
+    margin-top: 5px;
+}
+
+/* Tarjetas de Detalle */
+.detail-card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+}
+
+.detail-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+}
+
+.detail-card .card-header {
+    border-bottom: none;
+    padding: 15px 20px;
+}
+
+.detail-card .card-header h5 {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.detail-card .card-body {
+    padding: 20px;
+}
+
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #f1f3f4;
+}
+
+.detail-item:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    color: #6c757d;
+    font-size: 0.85rem;
+}
+
+.detail-value {
+    font-weight: 600;
+    color: #212529;
+    text-align: right;
+}
+
+/* Colores por Tipo */
+.bg-campo { background: linear-gradient(135deg, #28a745, #20c997); }
+.bg-planta { background: linear-gradient(135deg, #6f42c1, #e83e8c); }
+.bg-salida { background: linear-gradient(135deg, #fd7e14, #ffc107); }
+.bg-orden_envio { background: linear-gradient(135deg, #17a2b8, #007bff); }
+.bg-envio { background: linear-gradient(135deg, #007bff, #6610f2); }
+.bg-almacen { background: linear-gradient(135deg, #20c997, #198754); }
+.bg-pedido { background: linear-gradient(135deg, #e83e8c, #dc3545); }
+
+/* Form Control Grande */
+.form-control-lg {
+    border-radius: 10px;
+    border: 2px solid #e9ecef;
+    transition: border-color 0.3s ease;
+}
+
+.form-control-lg:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.15);
+}
 </style>
 
 <script>
-// Mostrar/ocultar dropdowns según el tipo seleccionado
+// Ejecutar cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('✓ Página de trazabilidad cargada');
+    actualizarDropdown();
+});
+
 function actualizarDropdown() {
     const tipo = document.getElementById('tipoBusqueda').value;
-    console.log('Cambiando a tipo:', tipo);
     
-    // Ocultar todos los dropdowns primero
-    const dropdowns = document.querySelectorAll('.dropdown-lote');
-    console.log('Total dropdowns encontrados:', dropdowns.length);
-    
-    dropdowns.forEach(dropdown => {
+    // Ocultar todos los dropdowns
+    document.querySelectorAll('.dropdown-lote').forEach(dropdown => {
         dropdown.style.display = 'none';
-        dropdown.value = ''; // Reset value
+        dropdown.value = '';
     });
     
     // Mostrar el dropdown correspondiente
-    if (tipo) {
-        const dropdownActivo = document.getElementById(`dropdown_${tipo}`);
-        console.log('Dropdown activo:', dropdownActivo);
-        
-        if (dropdownActivo) {
-            dropdownActivo.style.display = 'block';
-            console.log('✓ Dropdown mostrado para:', tipo);
-        } else {
-            console.error('No se encontró dropdown para tipo:', tipo);
-        }
+    const dropdownActivo = document.getElementById(`dropdown_${tipo}`);
+    if (dropdownActivo) {
+        dropdownActivo.style.display = 'block';
     }
 }
 
 async function buscarTrazabilidad() {
     const tipo = document.getElementById('tipoBusqueda').value;
-    console.log('🔍 Buscando trazabilidad - Tipo:', tipo);
-    
-    if (!tipo) {
-        alert('Por favor seleccione un tipo de búsqueda');
-        return;
-    }
-    
-    // Obtener el dropdown activo y su valor
     const dropdownActivo = document.getElementById(`dropdown_${tipo}`);
     const codigo = dropdownActivo ? dropdownActivo.value : '';
-    
-    console.log('Dropdown activo:', dropdownActivo);
-    console.log('Código seleccionado:', codigo);
-    
+
     if (!codigo) {
-        alert('Por favor seleccione un lote');
+        alert('Por favor seleccione un elemento para rastrear');
         return;
     }
-
-    console.log(`📡 Llamando a API: /api/trazabilidad/${tipo}/${codigo}`);
 
     // Mostrar loading
     document.getElementById('loadingSpinner').style.display = 'block';
@@ -312,28 +336,21 @@ async function buscarTrazabilidad() {
     document.getElementById('errorAlert').style.display = 'none';
 
     try {
-        const url = `/api/trazabilidad/${tipo}/${encodeURIComponent(codigo)}`;
-        console.log('URL completa:', url);
-        
-        const response = await fetch(url);
-        console.log('Response status:', response.status);
+        const response = await fetch(`/api/trazabilidad/${tipo}/${encodeURIComponent(codigo)}`);
         
         if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Error response:', errorText);
-            throw new Error('No se encontró información de trazabilidad');
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || 'No se encontró información de trazabilidad');
         }
 
         const data = await response.json();
-        console.log('✓ Datos recibidos:', data);
-        
         renderizarTrazabilidad(data);
         
         document.getElementById('loadingSpinner').style.display = 'none';
         document.getElementById('resultadosTrazabilidad').style.display = 'block';
 
     } catch (error) {
-        console.error('❌ Error en búsqueda:', error);
+        console.error('Error:', error);
         document.getElementById('loadingSpinner').style.display = 'none';
         document.getElementById('errorAlert').style.display = 'block';
         document.getElementById('errorMessage').textContent = error.message;
@@ -341,101 +358,194 @@ async function buscarTrazabilidad() {
 }
 
 function renderizarTrazabilidad(datos) {
-    console.log('🎨 Renderizando trazabilidad...');
-    const container = document.getElementById('flowDiagram');
-    container.innerHTML = '';
+    const timelineContainer = document.getElementById('timelineContainer');
+    const detallesContainer = document.getElementById('detallesContainer');
+    
+    timelineContainer.innerHTML = '';
+    detallesContainer.innerHTML = '';
 
-    const etapaConfig = {
-        'campo': { nombre: 'Campo', icono: '🌱' },
-        'planta': { nombre: 'Planta', icono: '🏭' },
-        'salida': { nombre: 'Empaque', icono: '📦' },
-        'orden_envio': { nombre: 'Orden Envío', icono: '📋' },
-        'envio': { nombre: 'Transporte', icono: '🚛' },
-        'almacen': { nombre: 'Almacén', icono: '🏪' },
-        'pedido': { nombre: 'Pedido', icono: '📄' }
+    // Configuración de etapas con nombres amigables
+    const etapasConfig = {
+        'campo': { 
+            nombre: 'Cosecha', 
+            icono: '🌱',
+            descripcion: 'Origen del producto',
+            campos: {
+                'productor': 'Productor',
+                'variedad': 'Variedad',
+                'municipio': 'Ubicación',
+                'superficie_ha': 'Superficie (ha)'
+            }
+        },
+        'planta': { 
+            nombre: 'Procesamiento', 
+            icono: '🏭',
+            descripcion: 'Planta procesadora',
+            campos: {
+                'planta': 'Planta',
+                'rendimiento_pct': 'Rendimiento',
+                'rendimiento': 'Rendimiento'
+            }
+        },
+        'salida': { 
+            nombre: 'Empaque', 
+            icono: '📦',
+            descripcion: 'Producto empaquetado',
+            campos: {
+                'sku': 'Producto',
+                'peso_t': 'Peso (Toneladas)',
+                'peso': 'Peso',
+                'cantidad_envio_t': 'Cantidad Enviada'
+            }
+        },
+        'orden_envio': { 
+            nombre: 'Orden de Envío', 
+            icono: '📋',
+            descripcion: 'Planta → Almacén',
+            campos: {
+                'planta_origen': 'Planta Origen',
+                'almacen_destino': 'Almacén Destino',
+                'conductor': 'Conductor',
+                'vehiculo': 'Vehículo',
+                'cantidad': 'Cantidad',
+                'prioridad': 'Prioridad'
+            }
+        },
+        'envio': { 
+            nombre: 'Transporte', 
+            icono: '🚛',
+            descripcion: 'En tránsito',
+            campos: {
+                'estado': 'Estado',
+                'transportista': 'Transportista',
+                'vehiculo': 'Vehículo',
+                'cantidad_t': 'Cantidad (t)'
+            }
+        },
+        'almacen': { 
+            nombre: 'Almacén', 
+            icono: '🏪',
+            descripcion: 'Almacenamiento',
+            campos: {
+                'zona': 'Zona',
+                'ubicacion': 'Ubicación',
+                'cantidad_recibida': 'Cantidad Recibida',
+                'estado_producto': 'Estado del Producto'
+            }
+        },
+        'pedido': { 
+            nombre: 'Pedido', 
+            icono: '📄',
+            descripcion: 'Cliente final',
+            campos: {
+                'cliente': 'Cliente',
+                'info': 'Información'
+            }
+        }
     };
 
-
-    Object.entries(datos.etapas).forEach(([key, etapaData]) => {
-        // Validar que existen datos
-        if (!etapaData) {
-            console.log(`⚠️ Etapa ${key} no tiene datos`);
-            return;
-        }
-
-        const config = etapaConfig[key];
+    // Orden de las etapas
+    const ordenEtapas = ['campo', 'planta', 'salida', 'orden_envio', 'envio', 'almacen', 'pedido'];
+    
+    // Renderizar Timeline
+    ordenEtapas.forEach(key => {
+        if (!datos.etapas.hasOwnProperty(key)) return;
+        
+        const etapaData = datos.etapas[key];
+        const config = etapasConfig[key];
         if (!config) return;
 
-        // Si es array, tomar el primero si existe
-        let data = Array.isArray(etapaData) ? etapaData[0] : etapaData;
+        // Procesar datos
+        let data = null;
+        let isEmpty = false;
         
-        // Validar que data existe y tiene las propiedades necesarias
-        if (!data || !data.codigo) {
-            console.log(`⚠️ Etapa ${key} tiene datos inválidos o vacíos`);
-            return;
+        if (etapaData === null) {
+            isEmpty = true;
+        } else if (Array.isArray(etapaData)) {
+            if (etapaData.length === 0) {
+                isEmpty = true;
+            } else {
+                data = etapaData[0];
+            }
+        } else {
+            data = etapaData;
         }
 
-        const div = document.createElement('div');
-        div.className = `stage ${data.estado || 'pending'}`;
-        div.innerHTML = `
-            <div class="stage-icon">${config.icono}</div>
-            <div class="stage-name">${config.nombre}</div>
-            <div class="stage-code">${data.codigo}</div>
-            <div class="stage-date">${formatDate(data.fecha)}</div>
+        if (isEmpty || !data || !data.codigo) return;
+
+        // Crear paso de timeline
+        const step = document.createElement('div');
+        step.className = `timeline-step ${data.estado || 'completed'}`;
+        step.innerHTML = `
+            <div class="step-icon">${config.icono}</div>
+            <div class="step-info">
+                <div class="step-name">${config.nombre}</div>
+                <div class="step-code">${data.codigo}</div>
+                <div class="step-date">${formatDate(data.fecha)}</div>
+            </div>
         `;
-        
-        container.appendChild(div);
-        console.log(`✓ Etapa ${key} agregada`);
-    });
+        timelineContainer.appendChild(step);
 
-    // Renderizar detalles
-    renderizarDetalles(datos.etapas);
-}
-
-function renderizarDetalles(etapas) {
-    const container = document.getElementById('detallesEtapas');
-    container.innerHTML = '';
-
-    Object.entries(etapas).forEach(([key, etapaData]) => {
-        if (!etapaData) return;
-
-        const dataArray = Array.isArray(etapaData) ? etapaData : [etapaData];
-
-        dataArray.forEach((data, index) => {
-            // Validar que data existe y tiene detalles
-            if (!data || !data.detalles || typeof data.detalles !== 'object') {
-                console.log(`⚠️ Detalles no disponibles para ${key}`);
-                return;
-            }
-
+        // Crear tarjeta de detalle
+        if (data.detalles) {
             const card = document.createElement('div');
-            card.className = 'card mb-2';
+            card.className = 'col-md-4 col-lg-3 mb-4';
+            
+            let detallesHtml = '';
+            Object.entries(data.detalles).forEach(([k, v]) => {
+                const label = config.campos[k] || formatLabel(k);
+                if (v !== null && v !== undefined) {
+                    detallesHtml += `
+                        <div class="detail-item">
+                            <span class="detail-label">${label}</span>
+                            <span class="detail-value">${v}</span>
+                        </div>
+                    `;
+                }
+            });
+
             card.innerHTML = `
-                <div class="card-header">
-                    <h5 class="mb-0">${key.toUpperCase()}${dataArray.length > 1 ? ` #${index + 1}` : ''}: ${data.codigo || 'Sin código'}</h5>
-                </div>
-                <div class="card-body">
-                    ${Object.entries(data.detalles).map(([k, v]) => `
-                        <p class="mb-1"><strong>${k}:</strong> ${v ?? '-'}</p>
-                    `).join('')}
+                <div class="detail-card card h-100">
+                    <div class="card-header bg-${key} text-white">
+                        <h5><span class="mr-2">${config.icono}</span>${config.nombre}</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <small class="text-muted">${config.descripcion}</small>
+                            <h5 class="mb-0">${data.codigo}</h5>
+                        </div>
+                        ${detallesHtml}
+                        <div class="mt-3 text-right">
+                            <small class="text-muted"><i class="fas fa-calendar"></i> ${formatDate(data.fecha)}</small>
+                        </div>
+                    </div>
                 </div>
             `;
-            container.appendChild(card);
-        });
+            detallesContainer.appendChild(card);
+        }
     });
-    
-    console.log('✓ Detalles renderizados');
+
+    if (timelineContainer.children.length === 0) {
+        timelineContainer.innerHTML = '<div class="alert alert-warning">No se encontraron datos de trazabilidad para este elemento.</div>';
+    }
 }
 
-function formatDate(dateString) {
-    if (!dateString) return '-';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+function formatDate(dateStr) {
+    if (!dateStr) return '-';
+    try {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('es-ES', { 
+            day: '2-digit', 
+            month: 'short', 
+            year: 'numeric' 
+        });
+    } catch {
+        return dateStr;
+    }
 }
 
-// Inicializar al cargar la página
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('✓ Página cargada, inicializando...');
-    actualizarDropdown();
-});
+function formatLabel(key) {
+    return key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+}
 </script>
+@endsection
