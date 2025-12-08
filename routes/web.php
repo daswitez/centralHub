@@ -139,6 +139,18 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/trazabilidad/pdf/{tipo}/{codigo}', [TrazabilidadController::class, 'exportPdf'])
         ->name('trazabilidad.pdf');
     
+    // Certificaciones
+    Route::prefix('certificaciones')->name('certificaciones.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Certificacion\CertificacionController::class, 'index'])->name('index');
+        Route::get('/crear', [\App\Http\Controllers\Certificacion\CertificacionController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\Certificacion\CertificacionController::class, 'store'])->name('store');
+        Route::get('/{id}', [\App\Http\Controllers\Certificacion\CertificacionController::class, 'show'])->name('show');
+        Route::get('/{id}/pdf', [\App\Http\Controllers\Certificacion\CertificacionController::class, 'exportPdf'])->name('pdf');
+        Route::post('/{id}/evidencia', [\App\Http\Controllers\Certificacion\CertificacionController::class, 'uploadEvidencia'])->name('evidencia.upload');
+        Route::delete('/{id}/evidencia/{evidenciaId}', [\App\Http\Controllers\Certificacion\CertificacionController::class, 'deleteEvidencia'])->name('evidencia.delete');
+        Route::get('/verificar-cadena/{lote_salida_id}', [\App\Http\Controllers\Certificacion\CertificacionController::class, 'verificarCadena'])->name('verificar-cadena');
+    });
+    
     // Almacenes (show adicional)
     Route::get('/cat/almacenes/{id}', [AlmacenController::class, 'show'])->name('cat.almacenes.show');
     

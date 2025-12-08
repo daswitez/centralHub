@@ -74,11 +74,12 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('panel.certificaciones') }}" class="nav-link">
+                                <a href="{{ route('certificaciones.index') }}" class="nav-link">
                                     <i class="nav-icon fas fa-certificate"></i>
                                     <p>Certificaciones</p>
                                 </a>
                             </li>
+
                             <li class="nav-item has-treeview">
                                 <a href="#" class="nav-link">
                                     <i class="nav-icon fas fa-database"></i>
