@@ -79,6 +79,19 @@
                                     <p>Certificaciones</p>
                                 </a>
                             </li>
+                            <li class="nav-item has-treeview">
+                                <a href="#" class="nav-link">
+                                    <i class="nav-icon fas fa-warehouse"></i>
+                                    <p>Almacén <i class="right fas fa-angle-left"></i></p>
+                                </a>
+                                <ul class="nav nav-treeview">
+                                    <li class="nav-item"><a class="nav-link" href="{{ route('panel.almacen') }}"><i class="fas fa-tachometer-alt mr-2"></i><p>Dashboard</p></a></li>
+                                    <li class="nav-item"><a class="nav-link" href="{{ route('cat.almacenes.index') }}"><i class="fas fa-cogs mr-2"></i><p>Gestión Almacenes</p></a></li>
+                                    <li class="nav-item"><a class="nav-link" href="{{ route('tx.almacen.despachar-al-almacen.form') }}"><i class="fas fa-truck-loading mr-2"></i><p>Despachar a almacén</p></a></li>
+                                    <li class="nav-item"><a class="nav-link" href="{{ route('tx.almacen.recepcionar-envio.form') }}"><i class="fas fa-inbox mr-2"></i><p>Recepcionar envío</p></a></li>
+                                    <li class="nav-item"><a class="nav-link" href="{{ route('tx.almacen.despachar-al-cliente.form') }}"><i class="fas fa-shipping-fast mr-2"></i><p>Despachar a cliente</p></a></li>
+                                </ul>
+                            </li>
 
                             <li class="nav-item has-treeview">
                                 <a href="#" class="nav-link">
@@ -92,7 +105,6 @@
                                     <li class="nav-item"><a class="nav-link" href="{{ route('cat.plantas.index') }}"><p>Plantas</p></a></li>
                                     <li class="nav-item"><a class="nav-link" href="{{ route('cat.clientes.index') }}"><p>Clientes</p></a></li>
                                     <li class="nav-item"><a class="nav-link" href="{{ route('cat.transportistas.index') }}"><p>Transportistas</p></a></li>
-                                    <li class="nav-item"><a class="nav-link" href="{{ route('cat.almacenes.index') }}"><p>Almacenes</p></a></li>
                                 </ul>
                             </li>
                             <li class="nav-item has-treeview">
@@ -130,21 +142,6 @@
                                     <li class="nav-item">
                                         <a class="nav-link" href="{{ route('tx.planta.lote-salida-envio.form') }}">
                                             <p>Planta - Lote salida / envío</p>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="{{ route('tx.almacen.despachar-al-almacen.form') }}">
-                                            <p>Almacén - Despachar a almacén</p>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="{{ route('tx.almacen.recepcionar-envio.form') }}">
-                                            <p>Almacén - Recepcionar envío</p>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="{{ route('tx.almacen.despachar-al-cliente.form') }}">
-                                            <p>Almacén - Despachar a cliente</p>
                                         </a>
                                     </li>
                                 </ul>
@@ -201,25 +198,6 @@
                                 </a>
                             </li>
 
-                            {{-- Menú de Almacenes y Logística --}}
-                            <li class="nav-item has-treeview">
-                                <a href="#" class="nav-link">
-                                    <i class="nav-icon fas fa-warehouse"></i>
-                                    <p>Almacenes <i class="right fas fa-angle-left"></i></p>
-                                </a>
-                                <ul class="nav nav-treeview">
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="{{ route('cat.almacenes.index') }}">
-                                            <p>Lista de Almacenes</p>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="{{ route('cat.almacenes.create') }}">
-                                            <p>Nuevo Almacén</p>
-                                        </a>
-                                    </li>
-                                </ul>
-                            </li>
 
                             <li class="nav-item has-treeview">
                                 <a href="#" class="nav-link">

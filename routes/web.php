@@ -52,7 +52,8 @@ Route::middleware(['auth'])->group(function () {
     
     // Rutas para comercial/ventas
     Route::prefix('comercial')->name('comercial.')->group(function () {
-        Route::resource('pedidos', PedidoController::class)->only(['index', 'create', 'store']);
+        Route::resource('pedidos', PedidoController::class)->only(['index', 'create', 'store', 'show']);
+        Route::put('pedidos/{id}/estado', [PedidoController::class, 'cambiarEstado'])->name('pedidos.cambiarEstado');
     });
 
     // Paneles (dashboards)
@@ -62,6 +63,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/logistica', [DashboardController::class, 'logistica'])->name('logistica');
         Route::get('/planta', [DashboardController::class, 'planta'])->name('planta');
         Route::get('/certificaciones', [DashboardController::class, 'certificaciones'])->name('certificaciones');
+        Route::get('/almacen', [\App\Http\Controllers\Almacen\AlmacenDashboardController::class, 'index'])->name('almacen');
     });
 
     // API endpoints for transactions

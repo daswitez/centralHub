@@ -99,4 +99,80 @@ class PedidoController extends Controller
                 ->withErrors(['error' => 'Error al registrar pedido: ' . $e->getMessage()]);
         }
     }
+
+    /**
+     * Mostrar detalle de un pedido
+     */
+    public function show(int $id): View
+    {
+        $pedido = DB::selectOne('
+            SELECT p.*, c.nombre as cliente_nombre, c.codigo_cliente, 
+                   c.direccion as cliente_direccion, c.tipo as cliente_tipo,
+                   a.nombre as almacen_nombre
+            FROM comercial.pedido p
+            LEFT JOIN cat.cliente c ON c.cliente_id = p.cliente_id
+            LEFT JOIN cat.almacen a ON a.almacen_id = p.almacen_id
+            WHERE p.pedido_id = ?
+        ', [$id]);
+
+        if (!$pedido) {
+            abort(404);
+        }
+
+        $detalles = DB::select('
+            SELECT pd.*, 
+                   (pd.cantidad_t * pd.precio_unit_usd) as subtotal
+            FROM comercial.pedidodetalle pd
+            WHERE pd.pedido_id = ?
+        ', [$id]);
+
+        // Calcular totales
+        $totalItems = count($detalles);
+        $totalCantidad = array_sum(array_column($detalles, 'cantidad_t'));
+        $totalMonto = array_sum(array_column($detalles, 'subtotal'));
+
+        // Estados disponibles para el flujo
+        $estadosDisponibles = $this->getEstadosSiguientes($pedido->estado);
+
+        return view('comercial.pedidos.show', [
+            'pedido' => $pedido,
+            'detalles' => $detalles,
+            'total_items' => $totalItems,
+            'total_cantidad' => $totalCantidad,
+            'total_monto' => $totalMonto,
+            'estados_disponibles' => $estadosDisponibles
+        ]);
+    }
+
+    /**
+     * Cambiar estado del pedido
+     */
+    public function cambiarEstado(Request $request, int $id): RedirectResponse
+    {
+        $validated = $request->validate([
+            'estado' => 'required|in:PENDIENTE,PREPARANDO,ENVIADO,ENTREGADO,CANCELADO'
+        ]);
+
+        DB::table('comercial.pedido')
+            ->where('pedido_id', $id)
+            ->update(['estado' => $validated['estado']]);
+
+        return redirect()->route('comercial.pedidos.show', $id)
+            ->with('success', 'Estado actualizado a ' . $validated['estado']);
+    }
+
+    /**
+     * Obtener estados siguientes según el estado actual
+     */
+    private function getEstadosSiguientes(string $estadoActual): array
+    {
+        return match ($estadoActual) {
+            'PENDIENTE', 'ABIERTO' => ['PREPARANDO', 'CANCELADO'],
+            'PREPARANDO' => ['ENVIADO', 'CANCELADO'],
+            'ENVIADO' => ['ENTREGADO'],
+            'ENTREGADO' => [],
+            'CANCELADO' => [],
+            default => ['PREPARANDO', 'CANCELADO']
+        };
+    }
 }
