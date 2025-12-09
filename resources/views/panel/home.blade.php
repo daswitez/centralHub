@@ -176,46 +176,65 @@
 
 {{-- Tablas de Información --}}
 <div class="row">
-    {{-- Estado de Almacenes --}}
+    {{-- Resumen de Ventas del Mes --}}
     <div class="col-lg-6">
         <div class="card">
             <div class="card-header border-0">
-                <h3 class="card-title"><i class="fas fa-warehouse text-primary mr-2"></i>Estado de Almacenes</h3>
+                <h3 class="card-title"><i class="fas fa-dollar-sign text-success mr-2"></i>Ventas del Mes</h3>
                 <div class="card-tools">
-                    <a href="{{ route('cat.almacenes.index') }}" class="btn btn-tool btn-sm">
+                    <a href="{{ route('comercial.pedidos.index') }}" class="btn btn-tool btn-sm">
                         <i class="fas fa-bars"></i>
                     </a>
                 </div>
             </div>
-            <div class="card-body table-responsive p-0">
-                <table class="table table-striped table-valign-middle">
+            <div class="card-body p-0">
+                {{-- Resumen de totales del mes --}}
+                <div class="d-flex justify-content-around text-center border-bottom py-2 bg-light">
+                    <div>
+                        <span class="text-muted small">Pedidos</span>
+                        <h5 class="mb-0 text-primary">{{ $ventas_mes_totales->total_pedidos ?? 0 }}</h5>
+                    </div>
+                    <div>
+                        <span class="text-muted small">Toneladas</span>
+                        <h5 class="mb-0 text-info">{{ number_format($ventas_mes_totales->total_toneladas ?? 0, 1) }} t</h5>
+                    </div>
+                    <div>
+                        <span class="text-muted small">Ingresos</span>
+                        <h5 class="mb-0 text-success">${{ number_format($ventas_mes_totales->total_usd ?? 0, 0) }}</h5>
+                    </div>
+                </div>
+                {{-- Top clientes --}}
+                <table class="table table-striped table-valign-middle mb-0">
                     <thead>
                         <tr>
-                            <th>Almacén</th>
-                            <th>Tipo</th>
-                            <th>Zonas</th>
-                            <th>Ocupación</th>
+                            <th>Cliente</th>
+                            <th class="text-center">Pedidos</th>
+                            <th class="text-right">Toneladas</th>
+                            <th class="text-right">Total USD</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($almacenes as $a)
+                        @forelse($ventas_por_cliente as $v)
                             <tr>
                                 <td>
-                                    <strong>{{ $a->nombre }}</strong>
-                                    <br><small class="text-muted">{{ $a->codigo_almacen }}</small>
+                                    <strong>{{ $v->cliente }}</strong>
+                                    <br>
+                                    @php
+                                        $badgeColor = match($v->tipo) {
+                                            'MAYORISTA' => 'bg-primary',
+                                            'RETAIL' => 'bg-success',
+                                            'PROCESADOR' => 'bg-warning',
+                                            default => 'bg-secondary'
+                                        };
+                                    @endphp
+                                    <span class="badge {{ $badgeColor }}">{{ $v->tipo }}</span>
                                 </td>
-                                <td><span class="badge bg-info">{{ $a->tipo ?? 'CENTRAL' }}</span></td>
-                                <td>{{ $a->zonas }}</td>
-                                <td>
-                                    <div class="progress progress-sm">
-                                        @php $color = $a->ocupacion_pct > 80 ? 'bg-danger' : ($a->ocupacion_pct > 50 ? 'bg-warning' : 'bg-success'); @endphp
-                                        <div class="progress-bar {{ $color }}" style="width: {{ $a->ocupacion_pct }}%"></div>
-                                    </div>
-                                    <small>{{ $a->ocupacion_pct }}%</small>
-                                </td>
+                                <td class="text-center">{{ $v->num_pedidos }}</td>
+                                <td class="text-right">{{ number_format($v->toneladas_vendidas, 2) }} t</td>
+                                <td class="text-right"><strong>${{ number_format($v->total_usd, 0) }}</strong></td>
                             </tr>
                         @empty
-                            <tr><td colspan="4" class="text-center text-muted">Sin almacenes</td></tr>
+                            <tr><td colspan="4" class="text-center text-muted">Sin ventas este mes</td></tr>
                         @endforelse
                     </tbody>
                 </table>

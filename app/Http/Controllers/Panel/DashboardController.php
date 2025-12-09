@@ -58,28 +58,33 @@ class DashboardController extends Controller
         
         // ====== RESÚMENES POR ÁREA ======
         
-        // Estado de almacenes (capacidad REAL basada en inventario)
-        $almacenes = DB::select("
+        // Resumen de ventas por cliente (Top 5 del mes)
+        $ventasPorCliente = DB::select("
             SELECT 
-                a.almacen_id, 
-                a.nombre, 
-                a.codigo_almacen,
-                coalesce(a.tipo, 'CENTRAL') as tipo,
-                coalesce(a.capacidad_total_t, 1000) as capacidad_total_t,
-                coalesce(inv.stock_actual, 0) as stock_actual_t,
-                coalesce(a.capacidad_total_t, 1000) - coalesce(inv.stock_actual, 0) as capacidad_disponible_t,
-                CASE WHEN coalesce(a.capacidad_total_t, 1000) > 0 
-                     THEN round((coalesce(inv.stock_actual, 0) / coalesce(a.capacidad_total_t, 1000)) * 100, 1) 
-                     ELSE 0 END as ocupacion_pct,
-                (SELECT count(*) FROM almacen.zona z WHERE z.almacen_id = a.almacen_id) as zonas
-            FROM cat.almacen a
-            LEFT JOIN (
-                SELECT almacen_id, sum(cantidad_t) as stock_actual
-                FROM almacen.inventario
-                GROUP BY almacen_id
-            ) inv ON inv.almacen_id = a.almacen_id
-            ORDER BY a.codigo_almacen
+                c.cliente_id,
+                c.nombre as cliente,
+                c.tipo,
+                count(DISTINCT p.pedido_id) as num_pedidos,
+                coalesce(sum(pd.cantidad_t), 0) as toneladas_vendidas,
+                coalesce(sum(pd.cantidad_t * pd.precio_unit_usd), 0) as total_usd
+            FROM cat.cliente c
+            JOIN comercial.pedido p ON p.cliente_id = c.cliente_id
+            JOIN comercial.pedidodetalle pd ON pd.pedido_id = p.pedido_id
+            WHERE date_trunc('month', p.fecha_pedido) = date_trunc('month', current_date)
+            GROUP BY c.cliente_id, c.nombre, c.tipo
+            ORDER BY total_usd DESC
             LIMIT 5
+        ");
+        
+        // Totales de ventas del mes
+        $ventasMesTotales = DB::selectOne("
+            SELECT 
+                count(DISTINCT p.pedido_id) as total_pedidos,
+                coalesce(sum(pd.cantidad_t), 0) as total_toneladas,
+                coalesce(sum(pd.cantidad_t * pd.precio_unit_usd), 0) as total_usd
+            FROM comercial.pedido p
+            JOIN comercial.pedidodetalle pd ON pd.pedido_id = p.pedido_id
+            WHERE date_trunc('month', p.fecha_pedido) = date_trunc('month', current_date)
         ");
 
         
@@ -184,7 +189,8 @@ class DashboardController extends Controller
             'kpi_rendimiento' => round((float) ($rendimientoPromedio->r ?? 0), 1),
             
             // Tablas resumen
-            'almacenes' => $almacenes,
+            'ventas_por_cliente' => $ventasPorCliente,
+            'ventas_mes_totales' => $ventasMesTotales,
             'ultimos_envios' => $ultimosEnvios,
             'ultimas_ordenes' => $ultimasOrdenes,
             'ultimos_lotes' => $ultimosLotesSalida,
