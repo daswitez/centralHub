@@ -182,4 +182,51 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', function() {
         return redirect()->route('panel.home');
     })->name('dashboard');
+    
+    // ====== REPORTES ANALÍTICOS ======
+    Route::prefix('reportes')->name('reportes.')->group(function () {
+        // Índice de reportes
+        Route::get('/', [\App\Http\Controllers\Reportes\ReportesIndexController::class, 'index'])
+            ->name('index');
+        
+        // Reporte 1: Rentabilidad por Cliente
+        Route::prefix('rentabilidad-cliente')->name('rentabilidad.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Reportes\ReportRentabilidadController::class, 'index'])
+                ->name('index');
+            Route::get('/pdf', [\App\Http\Controllers\Reportes\ReportRentabilidadController::class, 'exportPdf'])
+                ->name('pdf');
+            Route::get('/csv', [\App\Http\Controllers\Reportes\ReportRentabilidadController::class, 'exportCsv'])
+                ->name('csv');
+        });
+        
+        // Reporte 2: Rendimiento de Plantas
+        Route::prefix('rendimiento-plantas')->name('rendimiento.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Reportes\ReportRendimientoController::class, 'index'])
+                ->name('index');
+            Route::get('/pdf', [\App\Http\Controllers\Reportes\ReportRendimientoController::class, 'exportPdf'])
+                ->name('pdf');
+            Route::get('/csv', [\App\Http\Controllers\Reportes\ReportRendimientoController::class, 'exportCsv'])
+                ->name('csv');
+        });
+        
+        // Reporte 3: Análisis Logístico
+        Route::prefix('logistica')->name('logistica.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Reportes\ReportLogisticaController::class, 'index'])
+                ->name('index');
+            Route::get('/pdf', [\App\Http\Controllers\Reportes\ReportLogisticaController::class, 'exportPdf'])
+                ->name('pdf');
+            Route::get('/csv', [\App\Http\Controllers\Reportes\ReportLogisticaController::class, 'exportCsv'])
+                ->name('csv');
+        });
+        
+        // Reporte 4: Estado de Inventario
+        Route::prefix('inventario')->name('inventario.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Reportes\ReportInventarioController::class, 'index'])
+                ->name('index');
+            Route::get('/pdf', [\App\Http\Controllers\Reportes\ReportInventarioController::class, 'exportPdf'])
+                ->name('pdf');
+            Route::get('/csv', [\App\Http\Controllers\Reportes\ReportInventarioController::class, 'exportCsv'])
+                ->name('csv');
+        });
+    });
 });

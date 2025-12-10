@@ -14,15 +14,19 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         // Crear usuario administrador de prueba
-        $user = User::create([
-            'name' => 'Admin AgroPapas',
-            'email' => 'admin@agropapas.com',
-            'password' => Hash::make('password123'),
-        ]);
+        $user = User::firstOrCreate(
+            ['email' => 'admin@centralhub.com'],
+            [
+                'name' => 'Admin CentralHub',
+                'password' => Hash::make('password123'),
+            ]
+        );
 
-        // Asignar rol de admin
-        $user->assignRole('admin');
+        // Asignar rol de admin si no lo tiene
+        if (!$user->hasRole('admin')) {
+            $user->assignRole('admin');
+        }
 
-        echo "Usuario creado: admin@agropapas.com / password123 (ROL: admin)\n";
+        echo "Usuario creado: admin@centralhub.com / password123 (ROL: admin)\n";
     }
 }

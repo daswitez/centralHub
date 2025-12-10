@@ -1,160 +1,195 @@
-## Proyecto Laravel + AdminLTE 3 (AgroPapas)
+# CentralHub - Laravel + AdminLTE 3
 
-Esta guía explica cómo preparar el entorno, correr la aplicación y usar los endpoints CRUD creados para los catálogos base.
+Sistema de gestión empresarial desarrollado con Laravel y AdminLTE 3.
 
-### Requisitos
-- PHP 8.2+ (probado con 8.4.12) y extensiones `PDO`, `pdo_pgsql`, `pgsql`
-- Composer 2.6+
-- Node.js 18+ (recomendado 20/22) y npm
-- PostgreSQL (la DB usada aquí es `AgroPapas` en 127.0.0.1:5433 con usuario `daswit`)
+---
 
+## Requisitos del Sistema
 
-### 1) Instalación
-1. Abrir una terminal en el directorio del proyecto:
-   - Ruta del proyecto: `centralHub/adminlte`
-2. Instalar dependencias backend:
-   ```bash
-   composer install
-   ```
-3. Instalar dependencias frontend (AdminLTE 3, Bootstrap 4, jQuery, FA):
-   ```bash
-   npm install
-   ```
+- **PHP** 8.2+ (probado con 8.4) con extensiones: `PDO`, `pdo_pgsql`, `pgsql`
+- **Composer** 2.6+
+- **Node.js** 18+ (recomendado 20/22) y npm
+- **PostgreSQL** 12+
 
+---
 
-### 2) Configuración de entorno
-1. Copiar el archivo de entorno y generar la APP_KEY:
-   ```bash
-   copy .env.example .env   # en Windows PowerShell: Copy-Item .env.example .env -Force
-   php artisan key:generate
-   ```
-2. Editar `.env` con los datos de PostgreSQL (ejemplo):
-   ```env
-   DB_CONNECTION=pgsql
-   DB_HOST=127.0.0.1
-   DB_PORT=5433
-   DB_DATABASE=AgroPapas
-   DB_USERNAME=daswit
-   DB_PASSWORD=Slv6001313.
+## Instalación Rápida
 
-   # Recomendado en desarrollo para evitar dependencia de DB en la caché
-   CACHE_STORE=file
-   ```
-3. En Windows, habilitar extensiones `pdo_pgsql` y `pgsql` en `php.ini` (si no lo están):
-   ```ini
-   extension=pdo_pgsql
-   extension=pgsql
-   ```
-4. Limpiar cachés de Laravel para cargar el nuevo `.env`:
-   ```bash
-   php artisan optimize:clear
-   ```
+### 1. Clonar e instalar dependencias
 
+```bash
+# Instalar dependencias PHP
+composer install
 
-### 3) Base de datos
-- Migraciones del core de Laravel (users, cache, jobs):
-  ```bash
-  php artisan migrate
-  ```
-- Si quieres cargar el esquema extendido de AgroPapas (múltiples esquemas y tablas) usa el script SQL que compartiste desde `psql`:
-  ```bash
-  psql -h 127.0.0.1 -p 5433 -U daswit -d AgroPapas -f ruta/al/script.sql
-  ```
+# Instalar dependencias frontend (AdminLTE 3, Bootstrap 4, jQuery, FA)
+npm install
+```
 
+### 2. Configurar entorno
 
-### 4) Compilar assets (Vite)
-- Producción:
-  ```bash
-  npm run build
-  ```
-- Desarrollo (HMR opcional):
-  ```bash
-  npm run dev
-  # y en otra terminal:
-  php artisan serve --host=127.0.0.1 --port=8000
-  ```
+```bash
+# Copiar archivo de entorno
+copy .env.example .env          # Windows CMD
+# Copy-Item .env.example .env   # Windows PowerShell
+# cp .env.example .env          # Linux/Mac
 
+# Generar clave de aplicación
+php artisan key:generate
+```
 
-### 5) Levantar el servidor
+### 3. Configurar base de datos
+
+Editar `.env` con los datos de PostgreSQL:
+
+```env
+DB_CONNECTION=pgsql
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_DATABASE=centralhub
+DB_USERNAME=tu_usuario
+DB_PASSWORD=tu_password
+
+# Recomendado para desarrollo
+CACHE_STORE=file
+```
+
+> **Nota Windows**: Habilitar extensiones en `php.ini`:
+> ```ini
+> extension=pdo_pgsql
+> extension=pgsql
+> ```
+
+### 4. Ejecutar migraciones y seeders
+
+```bash
+# Limpiar caché primero
+php artisan optimize:clear
+
+# Ejecutar migraciones
+php artisan migrate
+
+# Poblar datos iniciales (usuarios, roles, datos demo)
+php artisan db:seed
+```
+
+### 5. Compilar assets
+
+```bash
+# Producción
+npm run build
+
+# Desarrollo (con hot reload)
+npm run dev
+```
+
+### 6. Iniciar servidor
+
 ```bash
 php artisan serve --host=127.0.0.1 --port=8000
 ```
-Abrir: `http://127.0.0.1:8000`
 
+Acceder a: **http://127.0.0.1:8000**
 
-## Endpoints CRUD creados (catálogos base)
-Todos usan vistas Blade con AdminLTE 3 (formularios web). También aceptan JSON si prefieres cURL/REST.
+---
 
-Prefijo común: `/cat`
+## Credenciales por Defecto
 
-### Departamentos
-- GET `/cat/departamentos` (index, filtro: `?q=`)
-- GET `/cat/departamentos/create` (form crear)
-- POST `/cat/departamentos` (crear)
-- GET `/cat/departamentos/{id}/edit` (form editar)
-- PUT `/cat/departamentos/{id}` (actualizar)
-- DELETE `/cat/departamentos/{id}` (eliminar)
+| Usuario | Contraseña | Rol |
+|---------|------------|-----|
+| admin@centralhub.com | password123 | admin |
 
-Ejemplos cURL (JSON):
+---
+
+## Estructura de Módulos
+
+### Catálogos (`/cat`)
+- Departamentos, Municipios
+- Variedades de Papa
+- Plantas, Clientes, Transportistas
+- Almacenes, Vehículos
+
+### Campo (`/campo`)
+- Productores
+- Lotes de Campo
+- Sensores y Lecturas
+- Solicitudes de Producción
+
+### Planta (`/planta`)
+- Transacciones de Planta
+- Control de Procesos
+
+### Logística (`/logistica`)
+- Órdenes de Envío
+- Rutas y Transportistas
+
+### Almacén (`/almacen`)
+- Dashboard de Almacén
+- Recepciones
+- Inventario
+
+### Comercial (`/comercial`)
+- Pedidos
+
+### Certificación (`/certificaciones`)
+- Gestión de Certificados
+
+---
+
+## Roles y Permisos
+
+| Rol | Permisos |
+|-----|----------|
+| **admin** | Todos los permisos |
+| **planta** | Crear solicitudes, gestionar planta, ver trazabilidad |
+| **productor** | Responder solicitudes, gestionar campo, ver trazabilidad |
+| **conductor** | Ver asignaciones |
+
+---
+
+## API Endpoints (Ejemplo: Departamentos)
+
 ```bash
+# Listar (con filtro opcional)
+GET /cat/departamentos?q=busqueda
+
 # Crear
-curl -X POST http://127.0.0.1:8000/cat/departamentos \
-  -H "Content-Type: application/json" \
-  -d '{ "nombre": "Potosí" }'
+POST /cat/departamentos
+Content-Type: application/json
+{ "nombre": "Nombre Departamento" }
 
 # Actualizar
-curl -X PUT http://127.0.0.1:8000/cat/departamentos/1 \
-  -H "Content-Type: application/json" \
-  -d '{ "nombre": "La Paz" }'
+PUT /cat/departamentos/{id}
+{ "nombre": "Nuevo Nombre" }
 
 # Eliminar
-curl -X DELETE http://127.0.0.1:8000/cat/departamentos/1
+DELETE /cat/departamentos/{id}
 ```
 
-### Municipios
-- GET `/cat/municipios` (index, filtros: `?q=`, `?departamento_id=`)
-- GET `/cat/municipios/create`
-- POST `/cat/municipios`
-- GET `/cat/municipios/{id}/edit`
-- PUT `/cat/municipios/{id}`
-- DELETE `/cat/municipios/{id}`
+---
 
-JSON esperado:
-```json
-{
-  "departamento_id": 1,
-  "nombre": "Cochabamba"
-}
+## Solución de Problemas
+
+| Problema | Solución |
+|----------|----------|
+| Error conexión PostgreSQL | Verificar usuario/host/puerto en `.env` |
+| Error caché/DB circular | Usar `CACHE_STORE=file` en `.env` |
+| esbuild no encontrado (Windows) | `npm install esbuild --no-save` |
+| Errores de permisos | Ejecutar migraciones con `--seed` reset: `php artisan migrate:fresh --seed` |
+
+---
+
+## Comandos Útiles
+
+```bash
+# Resetear BD completa con datos demo
+php artisan migrate:fresh --seed
+
+# Solo seeders
+php artisan db:seed
+
+# Limpiar todas las cachés
+php artisan optimize:clear
+
+# Ver rutas disponibles
+php artisan route:list
 ```
-
-### Variedades de papa
-- GET `/cat/variedades` (index, filtro: `?q=` por código/nombre)
-- GET `/cat/variedades/create`
-- POST `/cat/variedades`
-- GET `/cat/variedades/{id}/edit`
-- PUT `/cat/variedades/{id}`
-- DELETE `/cat/variedades/{id}`
-
-JSON esperado (campos aceptados):
-```json
-{
-  "codigo_variedad": "WAYCHA",
-  "nombre_comercial": "Waych'a",
-  "aptitud": "Mesa",
-  "ciclo_dias_min": 110,
-  "ciclo_dias_max": 140
-}
-```
-
-
-- El layout base está en `resources/views/layouts/app.blade.php` con AdminLTE 3.
-- Se incluye Font Awesome y los scripts de AdminLTE vía Vite (`resources/css/app.css`, `resources/js/app.js`).
-- Las vistas CRUD extienden el layout y usan componentes simples para alertas y formularios.
-
-
-## Solución de problemas
-- Error de autenticación a PostgreSQL: valida usuario/host/puerto y que la contraseña sea correcta (incluye punto final en este caso).
-- En Windows, si `esbuild` falta: `npm install esbuild --no-save` y luego `npm run build`.
-- Si limpiar caché falla por acceso a DB, usa `CACHE_STORE=file` en `.env` y `php artisan optimize:clear`.
-
-

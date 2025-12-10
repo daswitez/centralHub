@@ -3,129 +3,92 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>AgroPapas | Login</title>
+    <title>CentralHub | Iniciar Sesión</title>
 
     <!-- Google Font: Source Sans Pro -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- icheck bootstrap -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/icheck-bootstrap@3.0.1/icheck-bootstrap.min.css">
     <!-- AdminLTE -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
-    
-    <style>
-        .login-page {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        .login-box {
-            width: 400px;
-        }
-        .card {
-            border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-        }
-        .card-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 15px 15px 0 0 !important;
-            padding: 1.5rem;
-        }
-        .login-logo img {
-            max-width: 80px;
-            margin-bottom: 1rem;
-        }
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-            padding: 0.75rem;
-            font-weight: 600;
-        }
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
-        }
-    </style>
 </head>
 <body class="hold-transition login-page">
 <div class="login-box">
+    <!-- Logo -->
     <div class="login-logo">
-        <i class="fas fa-seedling fa-3x text-white mb-3"></i>
-        <h1 class="text-white font-weight-bold">AgroPapas</h1>
+        <a href="{{ url('/') }}"><b>Central</b>Hub</a>
     </div>
-
+    
+    <!-- /.login-logo -->
     <div class="card">
-        <div class="card-header text-center">
-            <h4 class="mb-0">
-                <i class="fas fa-sign-in-alt mr-2"></i>Iniciar Sesión
-            </h4>
-        </div>
-        <div class="card-body">
+        <div class="card-body login-card-body">
+            <p class="login-box-msg">Inicia sesión para acceder al sistema</p>
+
+            <!-- Alerts -->
             @if ($errors->any())
-                <div class="alert alert-danger alert-dismissible fade show">
-                    <button type="button" class="close" data-dismiss="alert">&times;</button>
-                    <i class="icon fas fa-ban"></i>
-                    <ul class="mb-0 pl-3">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
+                <div class="alert alert-danger alert-dismissible">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                    <h5><i class="icon fas fa-ban"></i> Error</h5>
+                    @foreach ($errors->all() as $error)
+                        {{ $error }}<br>
+                    @endforeach
+                </div>
+            @endif
+
+            @if (session('status'))
+                <div class="alert alert-success alert-dismissible">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                    <i class="icon fas fa-check"></i> {{ session('status') }}
                 </div>
             @endif
 
             <form action="{{ route('login') }}" method="post">
                 @csrf
                 <div class="input-group mb-3">
-                    <input 
-                        type="email" 
-                        name="email" 
-                        class="form-control @error('email') is-invalid @enderror" 
-                        placeholder="Correo electrónico"
-                        value="{{ old('email') }}"
-                        required
-                        autofocus
-                    >
+                    <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" 
+                           placeholder="Correo electrónico" value="{{ old('email') }}" required autofocus>
                     <div class="input-group-append">
                         <div class="input-group-text">
                             <span class="fas fa-envelope"></span>
                         </div>
                     </div>
                 </div>
-                
                 <div class="input-group mb-3">
-                    <input 
-                        type="password" 
-                        name="password" 
-                        class="form-control @error('password') is-invalid @enderror" 
-                        placeholder="Contraseña"
-                        required
-                    >
+                    <input type="password" name="password" class="form-control @error('password') is-invalid @enderror" 
+                           placeholder="Contraseña" required>
                     <div class="input-group-append">
                         <div class="input-group-text">
                             <span class="fas fa-lock"></span>
                         </div>
                     </div>
                 </div>
-                
                 <div class="row">
-                    <div class="col-7">
+                    <div class="col-8">
                         <div class="icheck-primary">
-                            <input type="checkbox" id="remember" name="remember">
+                            <input type="checkbox" id="remember" name="remember" {{ old('remember') ? 'checked' : '' }}>
                             <label for="remember">
                                 Recordarme
                             </label>
                         </div>
                     </div>
-                    <div class="col-5">
-                        <button type="submit" class="btn btn-primary btn-block">
-                            Ingresar
-                        </button>
+                    <!-- /.col -->
+                    <div class="col-4">
+                        <button type="submit" class="btn btn-primary btn-block">Ingresar</button>
                     </div>
+                    <!-- /.col -->
                 </div>
             </form>
+
+            <p class="mb-1 mt-3">
+                <a href="#">¿Olvidaste tu contraseña?</a>
+            </p>
         </div>
-        <div class="card-footer text-center text-muted">
-            <small>&copy; {{ date('Y') }} AgroPapas. Sistema de Gestión.</small>
-        </div>
+        <!-- /.login-card-body -->
     </div>
 </div>
+<!-- /.login-box -->
 
 <!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

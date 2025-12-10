@@ -199,6 +199,41 @@
                             </li>
 
 
+                            {{-- Menú de Reportes Analíticos --}}
+                            <li class="nav-item has-treeview">
+                                <a href="#" class="nav-link">
+                                    <i class="nav-icon fas fa-chart-bar"></i>
+                                    <p>Reportes <i class="right fas fa-angle-left"></i></p>
+                                </a>
+                                <ul class="nav nav-treeview">
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{{ route('reportes.index') }}">
+                                            <i class="fas fa-list mr-2"></i><p>Centro de Reportes</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{{ route('reportes.rentabilidad.index') }}">
+                                            <i class="fas fa-chart-pie mr-2"></i><p>Rentabilidad Clientes</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{{ route('reportes.rendimiento.index') }}">
+                                            <i class="fas fa-industry mr-2"></i><p>Rendimiento Plantas</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{{ route('reportes.logistica.index') }}">
+                                            <i class="fas fa-truck mr-2"></i><p>Análisis Logístico</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{{ route('reportes.inventario.index') }}">
+                                            <i class="fas fa-boxes mr-2"></i><p>Estado Inventario</p>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+
                             <li class="nav-item has-treeview">
                                 <a href="#" class="nav-link">
                                     <i class="nav-icon fas fa-truck"></i>
