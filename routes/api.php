@@ -14,22 +14,7 @@ use App\Http\Controllers\Campo\SensorLecturaController;
 use App\Http\Controllers\Planta\TransaccionPlantaController;
 use App\Http\Controllers\Almacen\TransaccionAlmacenController;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Estas rutas se cargan dentro del grupo de middleware "api",
-| que es *stateless* (sin sesión, sin CSRF).
-| Se exponen aquí endpoints JSON pensados para la app móvil.
-|
-| NOTA:
-| - Todas las rutas se montan bajo el prefijo /api, por ejemplo:
-|   GET /api/cat/departamentos
-|   POST /api/campo/productores
-|   POST /api/tx/planta/lote-planta
-|
-*/
+
 
 Route::prefix('cat')->group(function () {
     // Departamentos
