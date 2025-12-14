@@ -8,11 +8,7 @@
         <div class="card">
             <div class="card-header">
                 <h3 class="card-title">Listado de Lotes de Planta</h3>
-                <div class="card-tools">
-                    <a href="{{ route('tx.planta.lote-planta.form') }}" class="btn btn-primary btn-sm">
-                        <i class="fas fa-plus"></i> Registrar Lote Planta
-                    </a>
-                </div>
+                {{-- Botón de registrar removido - Los lotes se gestionan desde el microservicio de Trazabilidad --}}
             </div>
             <div class="card-body">
                 <div class="table-responsive">

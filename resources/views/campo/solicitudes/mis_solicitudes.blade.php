@@ -69,62 +69,11 @@
                                        class="btn btn-sm btn-info">
                                         <i class="fas fa-eye"></i> Ver
                                     </a>
+                                    {{-- Botón y modal de responder removidos - Las respuestas se gestionan desde el microservicio --}}
                                     @if($sol->estado === 'PENDIENTE')
-                                        <button type="button" 
-                                                class="btn btn-sm btn-success"
-                                                data-toggle="modal" 
-                                                data-target="#modalResponder{{ $sol->solicitud_id }}">
-                                            <i class="fas fa-reply"></i> Responder
-                                        </button>
-
-                                        {{-- Modal para responder --}}
-                                        <div class="modal fade" id="modalResponder{{ $sol->solicitud_id }}">
-                                            <div class="modal-dialog">
-                                                <div class="modal-content">
-                                                    <form method="POST" action="{{ route('solicitudes.responder', $sol->solicitud_id) }}">
-                                                        @csrf
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title">Responder Solicitud</h5>
-                                                            <button type="button" class="close" data-dismiss="modal">
-                                                                <span>&times;</span>
-                                                            </button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            <p><strong>{{ $sol->codigo_solicitud }}</strong></p>
-                                                            <p>Planta: {{ $sol->planta_nombre }}</p>
-                                                            <p>Cantidad: {{ number_format($sol->cantidad_solicitada_t, 2) }} t</p>
-                                                            <hr>
-                                                            
-                                                            <div class="form-group">
-                                                                <label>Decisión *</label>
-                                                                <select name="decision" class="form-control" required onchange="toggleJustificacion(this, {{ $sol->solicitud_id }})">
-                                                                    <option value="">Seleccione...</option>
-                                                                    <option value="ACEPTAR">✓ Aceptar</option>
-                                                                    <option value="RECHAZAR">✗ Rechazar</option>
-                                                                </select>
-                                                            </div>
-
-                                                            <div class="form-group" id="justificacionDiv{{ $sol->solicitud_id }}" style="display: none;">
-                                                                <label>Justificación de Rechazo *</label>
-                                                                <textarea name="justificacion_rechazo" 
-                                                                          class="form-control" 
-                                                                          rows="3"
-                                                                          placeholder="Explique por qué rechaza la solicitud..."></textarea>
-                                                            </div>
-
-                                                            <div class="alert alert-info" id="infoAceptar{{ $sol->solicitud_id }}" style="display: none;">
-                                                                <i class="fas fa-info-circle"></i>
-                                                                Al aceptar, se asignará automáticamente un conductor disponible.
-                                                            </div>
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                                                            <button type="submit" class="btn btn-primary">Confirmar</button>
-                                                        </div>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        <span class="badge badge-warning small">
+                                            <i class="fas fa-info-circle"></i> Pendiente de respuesta
+                                        </span>
                                     @endif
                                 </td>
                             </tr>
@@ -139,25 +88,4 @@
             @endif
         </div>
     </div>
-
-    <script>
-        function toggleJustificacion(select, id) {
-            const justDiv = document.getElementById(`justificacionDiv${id}`);
-            const infoDiv = document.getElementById(`infoAceptar${id}`);
-            
-            if (select.value === 'RECHAZAR') {
-                justDiv.style.display = 'block';
-                infoDiv.style.display = 'none';
-                justDiv.querySelector('textarea').required = true;
-            } else if (select.value === 'ACEPTAR') {
-                justDiv.style.display = 'none';
-                infoDiv.style.display = 'block';
-                justDiv.querySelector('textarea').required = false;
-            } else {
-                justDiv.style.display = 'none';
-                infoDiv.style.display = 'none';
-                justDiv.querySelector('textarea').required = false;
-            }
-        }
-    </script>
 @endsection

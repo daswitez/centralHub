@@ -5,76 +5,80 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\PermissionRegistrar;
 
 class RolesAndPermissionsSeeder extends Seeder
 {
-    /**
-     * Run the database seeder.
-     */
     public function run(): void
     {
-        // Reset cached roles and permissions
-        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+        // Reset cache
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
 
-        // Crear permisos
+        $guard = 'web';
+
+        // Permisos
         $permissions = [
-            // Solicitudes
             'crear_solicitudes',
             'ver_solicitudes',
             'responder_solicitudes',
-            
-            // Conductores
             'gestionar_conductores',
             'ver_conductores',
-            
-            // Trazabilidad
             'ver_trazabilidad',
-            
-            // Transacciones
             'gestionar_planta',
             'gestionar_almacen',
             'gestionar_campo',
         ];
 
         foreach ($permissions as $permission) {
-            Permission::create(['name' => $permission]);
+            Permission::firstOrCreate([
+                'name' => $permission,
+                'guard_name' => $guard,
+            ]);
         }
 
-        // Crear roles y asignar permisos
+        // Roles
+        $rolePlanta = Role::firstOrCreate([
+            'name' => 'planta',
+            'guard_name' => $guard,
+        ]);
 
-        // Rol Planta: Puede crear solicitudes, gestionar planta
-        $rolePlanta = Role::create(['name' => 'planta']);
-        $rolePlanta->givePermissionTo([
+        $roleProductor = Role::firstOrCreate([
+            'name' => 'productor',
+            'guard_name' => $guard,
+        ]);
+
+        $roleConductor = Role::firstOrCreate([
+            'name' => 'conductor',
+            'guard_name' => $guard,
+        ]);
+
+        $roleAdmin = Role::firstOrCreate([
+            'name' => 'admin',
+            'guard_name' => $guard,
+        ]);
+
+        // Asignar permisos
+        $rolePlanta->syncPermissions([
             'crear_solicitudes',
             'ver_solicitudes',
             'gestionar_planta',
             'ver_trazabilidad',
-            'ver_conductores'
+            'ver_conductores',
         ]);
 
-        // Rol Productor: Puede responder solicitudes, gestionar campo
-        $roleProductor = Role::create(['name' => 'productor']);
-        $roleProductor->givePermissionTo([
+        $roleProductor->syncPermissions([
             'responder_solicitudes',
             'ver_solicitudes',
             'gestionar_campo',
-            'ver_trazabilidad'
+            'ver_trazabilidad',
         ]);
 
-        // Rol Conductor: Puede ver asignaciones
-        $roleConductor = Role::create(['name' => 'conductor']);
-        $roleConductor->givePermissionTo([
-            'ver_conductores'
+        $roleConductor->syncPermissions([
+            'ver_conductores',
         ]);
 
-        // Rol Admin: Tiene todos los permisos
-        $roleAdmin = Role::create(['name' => 'admin']);
-        $roleAdmin->givePermissionTo(Permission::all());
+        $roleAdmin->syncPermissions(Permission::where('guard_name', $guard)->get());
 
-        echo "✓ Roles y permisos creados exitosamente\n";
-        echo "  - Planta: puede crear solicitudes y gestionar planta\n";
-        echo "  - Productor: puede responder solicitudes y gestionar campo\n";
-        echo "  - Conductor: puede ver asignaciones\n";
-        echo "  - Admin: tiene todos los permisos\n";
+        $this->command->info('✓ Roles y permisos creados correctamente');
     }
 }

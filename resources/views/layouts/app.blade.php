@@ -134,16 +134,7 @@
                                             <p>Ver Lotes de Salida</p>
                                         </a>
                                     </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="{{ route('tx.planta.lote-planta.form') }}">
-                                            <p>Planta - Registrar lote planta</p>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="{{ route('tx.planta.lote-salida-envio.form') }}">
-                                            <p>Planta - Lote salida / envío</p>
-                                        </a>
-                                    </li>
+                                    {{-- Links a formularios de creación removidos - Los lotes se gestionan desde el microservicio de Trazabilidad --}}
                                 </ul>
                             </li>
                             <li class="nav-item has-treeview">
@@ -157,11 +148,7 @@
                                             <p>Pedidos / Ventas</p>
                                         </a>
                                     </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="{{ route('comercial.pedidos.create') }}">
-                                            <p>Nuevo Pedido</p>
-                                        </a>
-                                    </li>
+                                    {{-- Link a crear pedido removido - Los pedidos se crean desde el microservicio de Trazabilidad --}}
                                 </ul>
                             </li>
 
@@ -177,11 +164,7 @@
                                             <p>Mis Solicitudes (Planta)</p>
                                         </a>
                                     </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="{{ route('solicitudes.create') }}">
-                                            <p>Nueva Solicitud</p>
-                                        </a>
-                                    </li>
+                                    {{-- Link a crear solicitud removido - Las solicitudes se gestionan desde el microservicio de OrgTrack --}}
                                     <li class="nav-item">
                                         <a class="nav-link" href="{{ route('solicitudes.mis-solicitudes') }}">
                                             <p>Solicitudes Recibidas (Productor)</p>

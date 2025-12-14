@@ -53,30 +53,13 @@
                         </div>
                         <h3 class="text-{{ $estadoConfig['color'] }}">{{ $estadoConfig['texto'] }}</h3>
                         
-                        @if(count($estados_disponibles) > 0)
+                        {{-- Formulario de cambio de estado removido - Los cambios se hacen desde el microservicio de Trazabilidad --}}
+                        @if(isset($estados_disponibles) && count($estados_disponibles) > 0)
                             <hr>
-                            <p class="text-muted mb-2">Cambiar estado a:</p>
-                            <div class="btn-group-vertical w-100">
-                                @foreach($estados_disponibles as $estado)
-                                    <form action="{{ route('comercial.pedidos.cambiarEstado', $pedido->pedido_id) }}" method="POST" class="mb-2">
-                                        @csrf
-                                        @method('PUT')
-                                        <input type="hidden" name="estado" value="{{ $estado }}">
-                                        @php
-                                            $btnColor = match($estado) {
-                                                'PREPARANDO' => 'info',
-                                                'ENVIADO' => 'primary',
-                                                'ENTREGADO' => 'success',
-                                                'CANCELADO' => 'danger',
-                                                default => 'secondary'
-                                            };
-                                        @endphp
-                                        <button type="submit" class="btn btn-{{ $btnColor }} btn-block">
-                                            {{ $estado }}
-                                        </button>
-                                    </form>
-                                @endforeach
-                            </div>
+                            <p class="text-muted small">
+                                <i class="fas fa-info-circle"></i> 
+                                Los cambios de estado se gestionan desde el sistema de Trazabilidad
+                            </p>
                         @endif
                     </div>
                 </div>

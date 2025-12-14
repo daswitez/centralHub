@@ -12,22 +12,13 @@ class PedidoController extends Controller
 {
     /**
      * Mostrar listado de pedidos
+     * 
+     * Nota: La vista carga los datos con JavaScript desde Trazabilidad API
      */
     public function index(): View
     {
-        $pedidos = DB::select('
-            SELECT p.pedido_id, p.codigo_pedido, p.fecha_pedido, p.estado,
-                   c.nombre as cliente_nombre, c.codigo_cliente,
-                   count(pd.pedido_detalle_id) as total_items,
-                   sum(pd.cantidad_t * pd.precio_unit_usd) as monto_total
-            FROM comercial.pedido p
-            LEFT JOIN cat.cliente c ON c.cliente_id = p.cliente_id
-            LEFT JOIN comercial.pedidodetalle pd ON pd.pedido_id = p.pedido_id
-            GROUP BY p.pedido_id, p.codigo_pedido, p.fecha_pedido, p.estado, c.nombre, c.codigo_cliente
-            ORDER BY p.fecha_pedido DESC
-        ');
-        
-        return view('comercial.pedidos.index', compact('pedidos'));
+        // La vista cargará los datos con JavaScript
+        return view('comercial.pedidos.index');
     }
 
     /**
@@ -38,7 +29,7 @@ class PedidoController extends Controller
         $clientes = DB::table('cat.cliente')
             ->orderBy('nombre')
             ->get();
-            
+
         return view('comercial.pedidos.create', compact('clientes'));
     }
 
@@ -64,7 +55,7 @@ class PedidoController extends Controller
             $ultimoPedido = DB::table('comercial.pedido')
                 ->orderBy('pedido_id', 'desc')
                 ->first();
-            
+
             $numero = $ultimoPedido ? ((int) substr($ultimoPedido->codigo_pedido, -3)) + 1 : 1;
             $codigoPedido = 'PED-' . date('Y') . '-' . str_pad($numero, 3, '0', STR_PAD_LEFT);
 

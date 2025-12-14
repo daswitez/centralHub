@@ -16,196 +16,53 @@
         <div class="col-12 col-lg-7">
             @include('components.alerts')
 
-            {{-- Tarjeta para ejecutar almacen.sp_despachar_a_almacen --}}
-            <div class="card card-outline card-dark shadow-sm">
-                <div class="card-header">
-                    <h3 class="card-title">Despachar a almacén destino</h3>
+            {{-- Mensaje informativo: Funcionalidad gestionada por microservicios --}}
+            <div class="card card-outline card-info shadow-sm">
+                <div class="card-header bg-info">
+                    <h3 class="card-title">
+                        <i class="fas fa-info-circle mr-2"></i>Funcionalidad Gestionada por Microservicios
+                    </h3>
                 </div>
-                <form method="post" action="{{ route('tx.almacen.despachar-al-almacen.store') }}">
-                    @csrf
-                    <div class="card-body">
-                        <h5 class="mb-1 text-uppercase">Datos generales del envío</h5>
-                        <div class="form-group">
-                            <label for="codigo_envio">Código envío</label>
-                            <input
-                                id="codigo_envio"
-                                name="codigo_envio"
-                                class="form-control"
-                                maxlength="40"
-                                required
-                                value="{{ old('codigo_envio', 'ENV-'.date('Ymd-His')) }}"
-                            >
-                        </div>
-                        <div class="form-group">
-                            <label for="transportista_id">Transportista</label>
-                            <select id="transportista_id" name="transportista_id" class="form-control" required>
-                                <option value="">Seleccione...</option>
-                                @foreach($transportistas as $t)
-                                    <option
-                                        value="{{ $t->transportista_id }}"
-                                        {{ (int) old('transportista_id') === $t->transportista_id ? 'selected' : '' }}
-                                    >
-                                        {{ $t->codigo_transp }} - {{ $t->nombre }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="almacen_destino_id">Almacén destino</label>
-                            <select id="almacen_destino_id" name="almacen_destino_id" class="form-control" required>
-                                <option value="">Seleccione...</option>
-                                @foreach($almacenes as $a)
-                                    <option
-                                        value="{{ $a->almacen_id }}"
-                                        {{ (int) old('almacen_destino_id') === $a->almacen_id ? 'selected' : '' }}
-                                    >
-                                        {{ $a->codigo_almacen }} - {{ $a->nombre }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="fecha_salida">Fecha salida</label>
-                            <input
-                                type="datetime-local"
-                                id="fecha_salida"
-                                name="fecha_salida"
-                                class="form-control"
-                                required
-                                value="{{ old('fecha_salida') }}"
-                            >
-                        </div>
-
+                <div class="card-body">
+                    <div class="alert alert-info mb-3">
+                        <h5 class="alert-heading">
+                            <i class="fas fa-warehouse mr-2"></i>Despacho a Almacén
+                        </h5>
+                        <p class="mb-2">
+                            La funcionalidad de <strong>despachar envíos desde planta hacia almacenes</strong>
+                            será gestionada a través de microservicios especializados.
+                        </p>
                         <hr>
-
-                        {{-- Detalle de lotes enviados al almacén --}}
-                        <h5 class="mb-1 text-uppercase">Detalle de lotes enviados</h5>
-                        <p class="text-muted small mb-2">Cada fila representa la cantidad de un lote de salida enviada al almacén destino.</p>
-
-                        <div class="table-responsive">
-                            <table class="table table-sm table-bordered mb-0" id="tabla-detalle-almacen">
-                                <thead class="thead-light">
-                                <tr>
-                                    <th style="width: 55%;">Lote salida</th>
-                                    <th style="width: 25%;">Cantidad (t)</th>
-                                    <th style="width: 20%;">&nbsp;</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                @php
-                                    $oldDetalle = old('detalle', [
-                                        ['codigo_lote_salida' => null, 'cantidad_t' => null],
-                                    ]);
-                                @endphp
-                                @foreach($oldDetalle as $idx => $d)
-                                    <tr>
-                                        <td>
-                                            <select
-                                                name="detalle[{{ $idx }}][codigo_lote_salida]"
-                                                class="form-control"
-                                                required
-                                            >
-                                                <option value="">Seleccione...</option>
-                                                @foreach($lotesSalida as $ls)
-                                                    <option
-                                                        value="{{ $ls->codigo_lote_salida }}"
-                                                        {{ ($d['codigo_lote_salida'] ?? '') === $ls->codigo_lote_salida ? 'selected' : '' }}
-                                                    >
-                                                        {{ $ls->codigo_lote_salida }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                        </td>
-                                        <td>
-                                            <input
-                                                type="number"
-                                                step="0.001"
-                                                min="0"
-                                                name="detalle[{{ $idx }}][cantidad_t]"
-                                                class="form-control"
-                                                required
-                                                value="{{ $d['cantidad_t'] ?? '' }}"
-                                            >
-                                        </td>
-                                        <td class="text-center">
-                                            <button type="button" class="btn btn-sm btn-outline-danger btn-remover-fila">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="mt-2">
-                            <button type="button" class="btn btn-outline-dark btn-sm" id="btn-agregar-fila-alm">
-                                <i class="fas fa-plus mr-1"></i> Agregar fila
-                            </button>
-                        </div>
+                        <p class="mb-0 small">
+                            <strong>Nota técnica:</strong> Esta vista anteriormente ejecutaba el stored procedure
+                            <code>almacen.sp_despachar_a_almacen</code>. La lógica de negocio será migrada
+                            al microservicio de Almacén o Trazabilidad.
+                        </p>
                     </div>
-                    <div class="card-footer d-flex justify-content-between">
-                        <a href="{{ route('panel.logistica') }}" class="btn btn-outline-secondary">Volver a panel logística</a>
-                        <button type="submit" class="btn btn-dark">Ejecutar transacción</button>
+
+                    <h6 class="text-uppercase mb-3">
+                        <i class="fas fa-list-ul mr-2"></i>Operaciones disponibles en el futuro:
+                    </h6>
+                    <ul class="mb-3">
+                        <li>Crear envíos desde planta a almacén destino</li>
+                        <li>Asignar transportista y vehículo</li>
+                        <li>Registrar detalles de lotes de salida</li>
+                        <li>Tracking en tiempo real del envío</li>
+                        <li>Actualización automática de inventarios</li>
+                    </ul>
+
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        <strong>Estado actual:</strong> Esta vista está en modo de solo lectura mientras
+                        se completa la migración a arquitectura de microservicios.
                     </div>
-                </form>
+                </div>
+                <div class="card-footer">
+                    <a href="{{ route('panel.logistica') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left mr-1"></i> Volver a panel logística
+                    </a>
+                </div>
             </div>
         </div>
     </div>
-
-    {{-- Script para gestionar filas dinámicas del detalle hacia almacén --}}
-    <script>
-        (function () {
-            const tabla = document.getElementById('tabla-detalle-almacen');
-            const btnAgregar = document.getElementById('btn-agregar-fila-alm');
-            if (!tabla || !btnAgregar) {
-                return;
-            }
-
-            const handleAgregar = () => {
-                const tbody = tabla.querySelector('tbody');
-                const filas = tbody.querySelectorAll('tr');
-                const nextIndex = filas.length;
-                const plantilla = filas[filas.length - 1];
-                if (!plantilla) {
-                    return;
-                }
-                const nueva = plantilla.cloneNode(true);
-                nueva.querySelectorAll('select, input').forEach((el) => {
-                    if (el.name) {
-                        el.name = el.name.replace(/\[\d+]/, '[' + nextIndex + ']');
-                    }
-                    if (el.tagName === 'SELECT') {
-                        el.selectedIndex = 0;
-                    } else {
-                        el.value = '';
-                    }
-                });
-                tbody.appendChild(nueva);
-            };
-
-            const handleClick = (event) => {
-                const target = event.target;
-                if (!(target instanceof HTMLElement)) {
-                    return;
-                }
-                if (target.classList.contains('btn-remover-fila') || target.closest('.btn-remover-fila')) {
-                    const btn = target.closest('.btn-remover-fila');
-                    const fila = btn && btn.closest('tr');
-                    const tbody = fila && fila.parentElement;
-                    if (!fila || !tbody) {
-                        return;
-                    }
-                    if (tbody.querySelectorAll('tr').length <= 1) {
-                        return;
-                    }
-                    tbody.removeChild(fila);
-                }
-            };
-
-            btnAgregar.addEventListener('click', handleAgregar);
-            tabla.addEventListener('click', handleClick);
-        })();
-    </script>
 @endsection
-
-
