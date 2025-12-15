@@ -8,6 +8,7 @@ use App\Http\Controllers\Cat\PlantaController;
 use App\Http\Controllers\Cat\ClienteController;
 use App\Http\Controllers\Cat\TransportistaController;
 use App\Http\Controllers\Cat\AlmacenController;
+use App\Http\Controllers\Logistica\LogisticaController;
 use App\Http\Controllers\Campo\ProductorController;
 use App\Http\Controllers\Campo\LoteCampoController;
 use App\Http\Controllers\Campo\SensorLecturaController;
@@ -17,7 +18,7 @@ use App\Http\Controllers\Panel\DashboardController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Comercial\PedidoController;
 use App\Http\Controllers\Campo\SolicitudProduccionController;
-use App\Http\Controllers\TrazabilidadController;
+use App\Http\Controllers\Trazabilidad\TrazabilidadController;
 
 // Rutas de autenticación (públicas)
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
@@ -31,7 +32,7 @@ Route::get('/', function () {
 
 // Todas las rutas protegidas con autenticación
 Route::middleware(['auth'])->group(function () {
-    
+
     // Rutas CRUD para catálogos base (prefijo /cat)
     Route::prefix('cat')->name('cat.')->group(function () {
         Route::resource('departamentos', DepartamentoController::class)->except(['show']);
@@ -49,7 +50,7 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('lotes', LoteCampoController::class)->except(['show']);
         Route::resource('lecturas', SensorLecturaController::class)->except(['show']);
     });
-    
+
     // Rutas para comercial/ventas
     Route::prefix('comercial')->name('comercial.')->group(function () {
         Route::resource('pedidos', PedidoController::class)->only(['index', 'create', 'store', 'show']);
@@ -79,7 +80,7 @@ Route::middleware(['auth'])->group(function () {
                 ->name('lotes-planta.index');
             Route::get('lotes-salida', [TransaccionPlantaController::class, 'indexLotesSalida'])
                 ->name('lotes-salida.index');
-                
+
             Route::get('lote-planta', [TransaccionPlantaController::class, 'showLotePlantaForm'])
                 ->name('lote-planta.form');
             Route::post('lote-planta', [TransaccionPlantaController::class, 'registrarLotePlanta'])
@@ -127,20 +128,24 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // Trazabilidad
-    Route::prefix('trazabilidad')->name('trazabilidad.')->group(function () {
-        Route::get('/', [TrazabilidadController::class, 'index'])
-            ->name('index');
+    // Route::prefix('trazabilidad')->name('trazabilidad.')->group(function () {
+    //     Route::get('/', [TrazabilidadController::class, 'index'])
+    //         ->name('index');
+    // });
+    Route::prefix('extra')->name('extra.')->group(function () {
+        Route::get('/', [TrazabilidadController::class, 'recurso1'])->name('recurso1');
     });
+
 
     // API para trazabilidad
     Route::prefix('api')->group(function () {
         Route::get('/trazabilidad/{tipo}/{codigo}', [TrazabilidadController::class, 'getDatosCompletos']);
     });
-    
+
     // Exportar PDF de trazabilidad
     Route::get('/trazabilidad/pdf/{tipo}/{codigo}', [TrazabilidadController::class, 'exportPdf'])
         ->name('trazabilidad.pdf');
-    
+
     // Certificaciones
     Route::prefix('certificaciones')->name('certificaciones.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Certificacion\CertificacionController::class, 'index'])->name('index');
@@ -152,10 +157,10 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/{id}/evidencia/{evidenciaId}', [\App\Http\Controllers\Certificacion\CertificacionController::class, 'deleteEvidencia'])->name('evidencia.delete');
         Route::get('/verificar-cadena/{lote_salida_id}', [\App\Http\Controllers\Certificacion\CertificacionController::class, 'verificarCadena'])->name('verificar-cadena');
     });
-    
+
     // Almacenes (show adicional)
     Route::get('/cat/almacenes/{id}', [AlmacenController::class, 'show'])->name('cat.almacenes.show');
-    
+
     // Vehículos
     Route::prefix('vehiculos')->name('vehiculos.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Cat\VehiculoController::class, 'index'])->name('index');
@@ -166,29 +171,45 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/{id}', [\App\Http\Controllers\Cat\VehiculoController::class, 'update'])->name('update');
         Route::post('/{id}/asignar-conductor', [\App\Http\Controllers\Cat\VehiculoController::class, 'asignarConductor'])->name('asignar-conductor');
     });
-    
+
     // Órdenes de Envío (Planta → Almacén)
-    Route::prefix('ordenes-envio')->name('ordenes-envio.')->group(function () {
-        Route::get('/', [\App\Http\Controllers\Logistica\OrdenEnvioController::class, 'index'])->name('index');
-        Route::get('/crear', [\App\Http\Controllers\Logistica\OrdenEnvioController::class, 'create'])->name('create');
-        Route::post('/', [\App\Http\Controllers\Logistica\OrdenEnvioController::class, 'store'])->name('store');
-        Route::get('/{id}', [\App\Http\Controllers\Logistica\OrdenEnvioController::class, 'show'])->name('show');
-        Route::get('/{id}/pdf', [\App\Http\Controllers\Logistica\OrdenEnvioController::class, 'exportPdf'])->name('pdf');
-        Route::post('/{id}/asignar-conductor', [\App\Http\Controllers\Logistica\OrdenEnvioController::class, 'asignarConductor'])->name('asignar-conductor');
-        Route::post('/{id}/cambiar-estado', [\App\Http\Controllers\Logistica\OrdenEnvioController::class, 'cambiarEstado'])->name('cambiar-estado');
+    // Route::prefix('ordenes-envio')->name('ordenes-envio.')->group(function () {
+    //     Route::get('/', [\App\Http\Controllers\Logistica\OrdenEnvioController::class, 'index'])->name('index');
+    //     Route::get('/crear', [\App\Http\Controllers\Logistica\OrdenEnvioController::class, 'create'])->name('create');
+    //     Route::post('/', [\App\Http\Controllers\Logistica\OrdenEnvioController::class, 'store'])->name('store');
+    //     Route::get('/{id}', [\App\Http\Controllers\Logistica\OrdenEnvioController::class, 'show'])->name('show');
+    //     Route::get('/{id}/pdf', [\App\Http\Controllers\Logistica\OrdenEnvioController::class, 'exportPdf'])->name('pdf');
+    //     Route::post('/{id}/asignar-conductor', [\App\Http\Controllers\Logistica\OrdenEnvioController::class, 'asignarConductor'])->name('asignar-conductor');
+    //     Route::post('/{id}/cambiar-estado', [\App\Http\Controllers\Logistica\OrdenEnvioController::class, 'cambiarEstado'])->name('cambiar-estado');
+    // });
+
+    Route::prefix('Trazabilidad')->name('Trazabilidad.')->group(function () {
+        Route::get('/productos', [TrazabilidadController::class, 'productosIndex'])->name('productos.index');
+        Route::get('/productos/{id}', [TrazabilidadController::class, 'productosShow'])->name('productos.show');
+        Route::get('/pedidos', [TrazabilidadController::class, 'pedidosIndex'])->name('pedidos.index');
+        Route::get('/pedidos/{id}', [TrazabilidadController::class, 'pedidosShow'])->name('pedidos.show');
     });
-    
+
+    Route::prefix('logistica')->name('logistica.')->group(function () {
+        Route::get('/envios', [LogisticaController::class, 'enviosIndex'])->name('envios.index');
+        Route::get('/envios/{id}', [LogisticaController::class, 'enviosShow'])->name('envios.show');
+        Route::get('/catalogo', [LogisticaController::class, 'catalogoIndex'])->name('catalogo.index');
+
+        Route::get('/tipos-transporte', [LogisticaController::class, 'tiposTransporteIndex'])->name('tipos-transporte.index');
+        Route::get('/envios-productores', [LogisticaController::class, 'enviosProductoresIndex'])->name('envios-productores.index');
+    });
+
     // Dashboard alias
-    Route::get('/dashboard', function() {
+    Route::get('/dashboard', function () {
         return redirect()->route('panel.home');
     })->name('dashboard');
-    
+
     // ====== REPORTES ANALÍTICOS ======
     Route::prefix('reportes')->name('reportes.')->group(function () {
         // Índice de reportes
         Route::get('/', [\App\Http\Controllers\Reportes\ReportesIndexController::class, 'index'])
             ->name('index');
-        
+
         // Reporte 1: Rentabilidad por Cliente
         Route::prefix('rentabilidad-cliente')->name('rentabilidad.')->group(function () {
             Route::get('/', [\App\Http\Controllers\Reportes\ReportRentabilidadController::class, 'index'])
@@ -198,7 +219,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/csv', [\App\Http\Controllers\Reportes\ReportRentabilidadController::class, 'exportCsv'])
                 ->name('csv');
         });
-        
+
         // Reporte 2: Rendimiento de Plantas
         Route::prefix('rendimiento-plantas')->name('rendimiento.')->group(function () {
             Route::get('/', [\App\Http\Controllers\Reportes\ReportRendimientoController::class, 'index'])
@@ -208,7 +229,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/csv', [\App\Http\Controllers\Reportes\ReportRendimientoController::class, 'exportCsv'])
                 ->name('csv');
         });
-        
+
         // Reporte 3: Análisis Logístico
         Route::prefix('logistica')->name('logistica.')->group(function () {
             Route::get('/', [\App\Http\Controllers\Reportes\ReportLogisticaController::class, 'index'])
@@ -218,7 +239,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/csv', [\App\Http\Controllers\Reportes\ReportLogisticaController::class, 'exportCsv'])
                 ->name('csv');
         });
-        
+
         // Reporte 4: Estado de Inventario
         Route::prefix('inventario')->name('inventario.')->group(function () {
             Route::get('/', [\App\Http\Controllers\Reportes\ReportInventarioController::class, 'index'])
