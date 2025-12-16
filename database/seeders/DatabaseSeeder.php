@@ -21,6 +21,13 @@ class DatabaseSeeder extends Seeder
             RolesAndPermissionsSeeder::class,
             UserSeeder::class,
             DemoDataSeeder::class,
+            LogisticaRutasSeeder::class,
+            AlmacenesCompletosSeeder::class,
+            TrazabilidadCompletaSeeder::class, // <--- Crea lotes base y limpia anteriores
+            ProduccionSeeder::class,         // <--- Añade datos a los lotes creados arriba
+            CertificacionesSeeder::class,    // <--- Añade certificados
+            AlmacenTransaccionalSeeder::class, // <--- Añade inventario
+            // TrazabilidadDemoSeeder::class, // <--- Redundante con TrazabilidadCompleta, causa duplicados
         ]);
     }
 }

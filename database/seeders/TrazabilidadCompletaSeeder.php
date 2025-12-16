@@ -10,18 +10,63 @@ class TrazabilidadCompletaSeeder extends Seeder
     public function run(): void
     {
         echo "🌱 Limpiando datos anteriores...\n";
-        
+
         // Limpiar en orden inverso por dependencias
-        DB::table('logistica.enviodetalle')->whereIn('envio_id', function($query) {
+
+        // 1. Dependencias de Envíos
+        DB::table('almacen.recepcion')->whereIn('envio_id', function ($query) {
             $query->select('envio_id')->from('logistica.envio')->where('codigo_envio', 'like', 'ENV-2024-%');
         })->delete();
-        
+
+        DB::table('certificacion.certificadoenvio')->whereIn('envio_id', function ($query) {
+            $query->select('envio_id')->from('logistica.envio')->where('codigo_envio', 'like', 'ENV-2024-%');
+        })->delete();
+
+        DB::table('logistica.enviodetalle')->whereIn('envio_id', function ($query) {
+            $query->select('envio_id')->from('logistica.envio')->where('codigo_envio', 'like', 'ENV-2024-%');
+        })->delete();
+
         DB::table('logistica.envio')->where('codigo_envio', 'like', 'ENV-2024-%')->delete();
+
+        // 2. Dependencias de Lotes de Salida
+        DB::table('almacen.inventario')->whereIn('lote_salida_id', function ($query) {
+            $query->select('lote_salida_id')->from('planta.lotesalida')->where('codigo_lote_salida', 'like', 'LS-2024-%');
+        })->delete();
+
+        DB::table('almacen.movimiento')->whereIn('lote_salida_id', function ($query) {
+            $query->select('lote_salida_id')->from('planta.lotesalida')->where('codigo_lote_salida', 'like', 'LS-2024-%');
+        })->delete();
+
+        DB::table('certificacion.certificadolotesalida')->whereIn('lote_salida_id', function ($query) {
+            $query->select('lote_salida_id')->from('planta.lotesalida')->where('codigo_lote_salida', 'like', 'LS-2024-%');
+        })->delete();
+
         DB::table('planta.lotesalida')->where('codigo_lote_salida', 'like', 'LS-2024-%')->delete();
-        DB::table('planta.loteplanta_entradacampo')->whereIn('lote_planta_id', function($query) {
+
+        // 3. Dependencias de Lotes de Planta
+        DB::table('planta.controlproceso')->whereIn('lote_planta_id', function ($query) {
             $query->select('lote_planta_id')->from('planta.loteplanta')->where('codigo_lote_planta', 'like', 'LP-2024-%');
         })->delete();
+
+        DB::table('certificacion.certificadoloteplanta')->whereIn('lote_planta_id', function ($query) {
+            $query->select('lote_planta_id')->from('planta.loteplanta')->where('codigo_lote_planta', 'like', 'LP-2024-%');
+        })->delete();
+
+        DB::table('planta.loteplanta_entradacampo')->whereIn('lote_planta_id', function ($query) {
+            $query->select('lote_planta_id')->from('planta.loteplanta')->where('codigo_lote_planta', 'like', 'LP-2024-%');
+        })->delete();
+
         DB::table('planta.loteplanta')->where('codigo_lote_planta', 'like', 'LP-2024-%')->delete();
+
+        // 4. Dependencias de Lotes de Campo
+        DB::table('campo.sensorlectura')->whereIn('lote_campo_id', function ($query) {
+            $query->select('lote_campo_id')->from('campo.lotecampo')->where('codigo_lote_campo', 'like', 'LC-2024-%');
+        })->delete();
+
+        DB::table('certificacion.certificadolotecampo')->whereIn('lote_campo_id', function ($query) {
+            $query->select('lote_campo_id')->from('campo.lotecampo')->where('codigo_lote_campo', 'like', 'LC-2024-%');
+        })->delete();
+
         DB::table('campo.lotecampo')->where('codigo_lote_campo', 'like', 'LC-2024-%')->delete();
 
         echo "🏗️ Creando datos de trazabilidad completa...\n";
@@ -37,7 +82,7 @@ class TrazabilidadCompletaSeeder extends Seeder
 
         // === CADENA 1: Completa (Campo → Planta → Salida → Envío) ===
         echo "  📍 Cadena 1: LC-2024-001 → LP-2024-001 → LS-2024-001 → ENV-2024-001\n";
-        
+
         $lc1 = DB::table('campo.lotecampo')->insertGetId([
             'codigo_lote_campo' => 'LC-2024-001',
             'productor_id' => $productor_id,
@@ -86,7 +131,7 @@ class TrazabilidadCompletaSeeder extends Seeder
 
         // === CADENA 2: Parcial hasta Salida ===
         echo "  📍 Cadena 2: LC-2024-002 → LP-2024-002 → LS-2024-002\n";
-        
+
         $lc2 = DB::table('campo.lotecampo')->insertGetId([
             'codigo_lote_campo' => 'LC-2024-002',
             'productor_id' => $productor_id,
@@ -119,7 +164,7 @@ class TrazabilidadCompletaSeeder extends Seeder
 
         // === CADENA 3: Solo Campo → Planta ===
         echo "  📍 Cadena 3: LC-2024-003 → LP-2024-003\n";
-        
+
         $lc3 = DB::table('campo.lotecampo')->insertGetId([
             'codigo_lote_campo' => 'LC-2024-003',
             'productor_id' => $productor_id,
@@ -144,7 +189,7 @@ class TrazabilidadCompletaSeeder extends Seeder
 
         // === CADENA 4: Envío con múltiples salidas ===
         echo "  📍 Cadena 4: ENV-2024-002 (contiene LS-2024-002 y nueva LS-2024-003)\n";
-        
+
         $ls3 = DB::table('planta.lotesalida')->insertGetId([
             'codigo_lote_salida' => 'LS-2024-003',
             'lote_planta_id' => $lp3,
