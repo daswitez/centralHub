@@ -1,16 +1,16 @@
 @extends('layouts.app')
 
-@section('page_title', 'Trazabilidad')
+@section('page_title', 'Estado de Lotes')
 
 @section('page_header')
     <div class="row align-items-center">
         <div class="col-sm-6">
-            <h1 class="m-0"><i class="fas fa-route text-primary"></i> Trazabilidad de Productos</h1>
+            <h1 class="m-0"><i class="fas fa-layer-group text-primary"></i> Estado de Lotes</h1>
         </div>
         <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
                 <li class="breadcrumb-item"><a href="{{ route('panel.home') }}">Inicio</a></li>
-                <li class="breadcrumb-item active">Trazabilidad</li>
+                <li class="breadcrumb-item active">Estado de Lotes</li>
             </ol>
         </div>
     </div>
@@ -21,7 +21,7 @@
     {{-- Card de Búsqueda --}}
     <div class="card card-primary card-outline">
         <div class="card-header">
-            <h3 class="card-title"><i class="fas fa-search mr-2"></i>Buscar Trazabilidad</h3>
+            <h3 class="card-title"><i class="fas fa-search mr-2"></i>Consultar Estado de Lotes</h3>
             <div class="card-tools">
                 <button type="button" class="btn btn-tool" data-card-widget="collapse">
                     <i class="fas fa-minus"></i>

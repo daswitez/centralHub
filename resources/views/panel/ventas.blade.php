@@ -31,7 +31,7 @@
                 <span class="info-box-icon bg-success"><i class="fas fa-dollar-sign"></i></span>
                 <div class="info-box-content">
                     <span class="info-box-text">Ingresos del mes</span>
-                    <span class="info-box-number">$ {{ number_format($kpi_ingresos_mes, 2) }}</span>
+                    <span class="info-box-number">Bs {{ number_format($kpi_ingresos_mes, 2) }}</span>
                 </div>
             </div>
         </div>
@@ -49,7 +49,7 @@
                 <span class="info-box-icon bg-danger"><i class="fas fa-chart-line"></i></span>
                 <div class="info-box-content">
                     <span class="info-box-text">Precio prom. por ton</span>
-                    <span class="info-box-number">$ {{ number_format($kpi_precio_promedio, 2) }}</span>
+                    <span class="info-box-number">Bs {{ number_format($kpi_precio_promedio, 2) }}</span>
                 </div>
             </div>
         </div>
@@ -82,7 +82,7 @@
                                     <td>{{ $p->cliente }}</td>
                                     <td>{{ \Carbon\Carbon::parse($p->fecha_pedido)->format('d/m/Y') }}</td>
                                     <td>{{ $p->num_items }}</td>
-                                    <td>$ {{ number_format($p->total, 2) }}</td>
+                                    <td>Bs {{ number_format($p->total, 2) }}</td>
                                     <td>
                                         <span class="badge badge-{{ $p->estado === 'COMPLETADO' ? 'success' : ($p->estado === 'PENDIENTE' ? 'warning' : 'secondary') }}">
                                             {{ $p->estado }}
@@ -119,9 +119,9 @@
         
         const salesChart = new ApexCharts(document.querySelector('#sales-chart'), {
             series: [
-                { name: 'Mayorista ($)', data: mayorista },
-                { name: 'Retail ($)', data: retail },
-                { name: 'Procesador ($)', data: procesador }
+                { name: 'Mayorista (Bs)', data: mayorista },
+                { name: 'Retail (Bs)', data: retail },
+                { name: 'Procesador (Bs)', data: procesador }
             ],
             chart: { height: 300, type: 'area', toolbar: { show: false } },
             dataLabels: { enabled: false },
@@ -136,7 +136,7 @@
             yaxis: {
                 labels: {
                     formatter: function(val) {
-                        return '$ ' + val.toFixed(0);
+                        return 'Bs ' + val.toFixed(0);
                     }
                 }
             },
@@ -144,7 +144,7 @@
             tooltip: {
                 y: {
                     formatter: function(val) {
-                        return '$ ' + val.toFixed(2);
+                        return 'Bs ' + val.toFixed(2);
                     }
                 }
             }

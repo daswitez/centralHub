@@ -214,10 +214,11 @@
                             </ul>
                         </li>
 
-                        {{-- Extras --}}
+                        {{-- Estado de Lotes --}}
                         <li class="nav-item">
                             <a href="{{ route('extra.recurso1') }}" class="nav-link">
-                                <p>seguimiento bonito</p>
+                                <i class="nav-icon fas fa-layer-group"></i>
+                                <p>Estado de Lotes</p>
                             </a>
                         </li>
 

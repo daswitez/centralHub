@@ -203,7 +203,7 @@
                         </div>
                         <div>
                             <span class="text-muted small">Ingresos</span>
-                            <h5 class="mb-0 text-success">${{ number_format($ventas_mes_totales->total_usd ?? 0, 0) }}</h5>
+                            <h5 class="mb-0 text-success">Bs {{ number_format($ventas_mes_totales->total_usd ?? 0, 0) }}</h5>
                         </div>
                     </div>
                     {{-- Top clientes --}}
@@ -213,7 +213,7 @@
                                 <th>Cliente</th>
                                 <th class="text-center">Pedidos</th>
                                 <th class="text-right">Toneladas</th>
-                                <th class="text-right">Total USD</th>
+                                <th class="text-right">Total Bs</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -234,7 +234,7 @@
                                     </td>
                                     <td class="text-center">{{ $v->num_pedidos }}</td>
                                     <td class="text-right">{{ number_format($v->toneladas_vendidas, 2) }} t</td>
-                                    <td class="text-right"><strong>${{ number_format($v->total_usd, 0) }}</strong></td>
+                                    <td class="text-right"><strong>Bs {{ number_format($v->total_usd, 0) }}</strong></td>
                                 </tr>
                             @empty
                                 <tr>
