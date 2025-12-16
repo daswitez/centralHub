@@ -1,59 +1,423 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+Perfecto. Aquí tienes un **README.md COMPLETO, UNIFICADO y LISTO PARA ENTREGA / REPO**, incorporando **TODO**:
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+* Laravel + Docker + Nginx + PostgreSQL
+* Networks internas + Proxy (Nginx Proxy Manager)
+* Variables de entorno reales
+* APIs externas (Trazabilidad, OrgTrack)
+* Comandos reales de despliegue
+* Errores comunes
+* Buen nivel académico y profesional
 
-## About Laravel
+Puedes **copiar y pegar tal cual** 👇
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+# 📘 CentralHub – Documentación Completa de Despliegue
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+**Laravel + Docker + Nginx + PostgreSQL + Nginx Proxy Manager**
 
-## Learning Laravel
+Este documento describe **cómo desplegar, configurar y mantener** el proyecto **CentralHub**, un sistema desarrollado en **Laravel**, ejecutado sobre **Docker**, con **Nginx**, **PostgreSQL** y expuesto mediante **Nginx Proxy Manager**.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+Está pensado para:
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+* Replicar el entorno desde cero
+* Entrega universitaria
+* Onboarding de nuevos integrantes
+* Despliegue en servidor
 
-## Laravel Sponsors
+---
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## 📑 Índice
 
-### Premium Partners
+1. Arquitectura General
+2. Requisitos Previos
+3. Estructura del Proyecto
+4. Servicios Docker del Proyecto
+5. Variables de Entorno
+6. Redes Docker (Internas y Proxy)
+7. Despliegue Paso a Paso
+8. Laravel – Preparación Inicial
+9. Base de Datos (PostgreSQL)
+10. Nginx y Proxy Reverso
+11. APIs Externas Integradas
+12. Comandos Útiles
+13. Backup y Restore de la Base de Datos
+14. Errores Comunes y Soluciones
+15. Estado Final Esperado
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+---
 
-## Contributing
+## 🏗️ 1. Arquitectura General
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```
+Internet
+   │
+   ▼
+Nginx Proxy Manager (80 / 443 / 81)
+   │
+   ▼
+Nginx (contenedor central)
+   │
+   ▼
+Laravel (PHP-FPM)
+   │
+   ▼
+PostgreSQL
+```
 
-## Code of Conduct
+El sistema está preparado para convivir con **otros proyectos Docker** usando redes compartidas y proxy inverso.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+---
 
-## Security Vulnerabilities
+## 📦 2. Requisitos Previos
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Antes de iniciar, el servidor o máquina local debe tener:
 
-## License
+* Docker
+* Docker Compose
+* Git
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Verificación rápida:
+
+```bash
+docker --version
+docker compose version
+git --version
+```
+
+---
+
+## 📁 3. Estructura del Proyecto
+
+Archivos clave en la raíz del proyecto:
+
+```
+.
+├── docker-compose.yml
+├── Dockerfile
+├── entrypoint.sh
+├── nginx.conf
+├── .env.example
+├── app/
+├── database/
+└── README.md
+```
+
+Estos **4 archivos son obligatorios** para el despliegue correcto:
+
+* `docker-compose.yml`
+* `Dockerfile`
+* `entrypoint.sh`
+* `nginx.conf`
+
+---
+
+## 🐳 4. Servicios Docker del Proyecto
+
+Configuración completa usada en producción y pruebas:
+
+```yaml
+services:
+  laravel:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: central-laravel
+    volumes:
+      - .:/var/www
+    environment:
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: central_db
+      DB_USERNAME: admin
+      DB_PASSWORD: admin123
+      TRAZABILIDAD_API_URL: http://trazabilidad.dasalas.shop/api
+      ORGTRACK_API_URL: https://orgtrack.dasalas.shop/api
+    depends_on:
+      - db
+    networks:
+      - central-net
+
+  nginx:
+    image: nginx:latest
+    container_name: central
+    expose:
+      - "80"
+    volumes:
+      - .:/var/www
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - laravel
+    networks:
+      - central-net
+      - internal-network
+      - proxy-network
+
+  db:
+    image: postgres:latest
+    container_name: central-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: central_db
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+    volumes:
+      - db-data:/var/lib/postgresql
+    networks:
+      - central-net
+
+networks:
+  central-net:
+    driver: bridge
+  internal-network:
+    external: true
+  proxy-network:
+    external: true
+
+volumes:
+  db-data:
+```
+
+---
+
+## ⚙️ 5. Variables de Entorno
+
+Archivo base:
+
+```bash
+cp .env.example .env
+```
+
+Variables importantes:
+
+```env
+DB_CONNECTION=pgsql
+DB_HOST=db
+DB_PORT=5432
+DB_DATABASE=central_db
+DB_USERNAME=admin
+DB_PASSWORD=admin123
+
+TRAZABILIDAD_API_URL=http://trazabilidad.dasalas.shop/api
+ORGTRACK_API_URL=https://orgtrack.dasalas.shop/api
+```
+
+Las variables definidas en `docker-compose.yml` **sobrescriben** las del `.env`.
+
+---
+
+## 🌐 6. Redes Docker (Obligatorio)
+
+Este proyecto utiliza **redes externas compartidas** para proxy y comunicación entre servicios.
+
+### Crear redes (solo una vez por servidor)
+
+```bash
+docker network create --driver bridge internal-network
+docker network create --driver bridge proxy-network
+```
+
+Estas redes **no se eliminan al bajar el proyecto** y se reutilizan para otros sistemas.
+
+---
+
+## 🚀 7. Despliegue Paso a Paso
+
+### 1. Clonar el repositorio
+
+```bash
+git clone https://github.com/usuario/centralhub.git
+cd centralhub
+```
+
+### 2. Levantar contenedores
+
+```bash
+docker compose up -d --build
+```
+
+### 3. Verificar contenedores
+
+```bash
+docker ps
+```
+
+---
+
+## 🧠 8. Laravel – Preparación Inicial
+
+Entrar al contenedor:
+
+```bash
+docker compose exec laravel bash
+```
+
+Ejecutar dentro:
+
+```bash
+php artisan key:generate
+php artisan optimize:clear
+```
+
+---
+
+## 🗄️ 9. Base de Datos (PostgreSQL)
+
+### Migraciones
+
+```bash
+php artisan migrate
+```
+
+Desde cero (borra todo):
+
+```bash
+php artisan migrate:fresh --seed
+```
+
+### Acceso directo a PostgreSQL
+
+```bash
+docker compose exec db bash
+psql -U admin -d central_db
+```
+
+Comandos útiles:
+
+```sql
+\dt
+\q
+```
+
+---
+
+## 🌐 10. Nginx y Proxy Reverso
+
+El contenedor `nginx` **no expone puertos directamente**.
+El acceso externo se realiza mediante **Nginx Proxy Manager**.
+
+Ejemplo de puertos del proxy:
+
+* 80 → HTTP
+* 443 → HTTPS
+* 81 → Panel administrativo
+
+---
+
+## 🧩 11. APIs Externas Integradas
+
+El proyecto consume servicios externos:
+
+* **Trazabilidad API**
+
+  ```
+  http://trazabilidad.dasalas.shop/api
+  ```
+
+* **OrgTrack API**
+
+  ```
+  https://orgtrack.dasalas.shop/api
+  ```
+
+Estas URLs se configuran por variables de entorno.
+
+---
+
+## 🧪 12. Comandos Útiles
+
+Logs generales:
+
+```bash
+docker compose logs -f
+```
+
+Logs de Laravel:
+
+```bash
+docker logs central-laravel -f
+```
+
+Ver rama actual:
+
+```bash
+git branch
+```
+
+Descartar cambios locales:
+
+```bash
+git checkout -- archivo
+```
+
+---
+
+## 💾 13. Backup y Restore de Base de Datos
+
+### Exportar
+
+```bash
+docker compose exec db pg_dump -U admin central_db > backup.sql
+```
+
+### Importar
+
+```bash
+docker compose exec -T db psql -U admin central_db < backup.sql
+```
+
+---
+
+## 🧯 14. Errores Comunes y Soluciones
+
+### uuid_generate_v4 no existe
+
+```sql
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+```
+
+### geography no existe
+
+```sql
+CREATE EXTENSION postgis;
+```
+
+### Vendor bloquea el contenedor
+
+```bash
+rm -rf vendor
+docker compose up -d --build
+```
+
+### Cookies / XSRF no se guardan
+
+Revisar:
+
+* `APP_URL`
+* `SESSION_DOMAIN`
+* HTTPS activo
+* Proxy correctamente configurado
+
+---
+
+## ✅ 15. Estado Final Esperado
+
+* Contenedores activos
+* Laravel accesible vía dominio
+* Base de datos migrada
+* APIs externas conectadas
+* Proxy funcionando con HTTPS
+
+---
+
+## 📌 Nota Final
+
+Este documento refleja **la configuración real usada en el proyecto**, no una plantilla genérica.
+
+Si algo falla:
+
+1. Revisar logs
+2. Verificar redes
+3. Confirmar variables
+4. Reintentar con `--build`
