@@ -105,8 +105,8 @@
         <div class="col-lg-3 col-6">
             <div class="small-box bg-success">
                 <div class="inner">
-                    <h3>$ {{ number_format($totales->total_ingresos ?? 0, 0) }}</h3>
-                    <p>Ingresos Totales (USD)</p>
+                    <h3>Bs. {{ number_format($totales->total_ingresos ?? 0, 0) }}</h3>
+                    <p>Ingresos Totales (Bs)</p>
                 </div>
                 <div class="icon"><i class="fas fa-dollar-sign"></i></div>
             </div>
@@ -123,8 +123,8 @@
         <div class="col-lg-3 col-6">
             <div class="small-box bg-info">
                 <div class="inner">
-                    <h3>$ {{ number_format($totales->precio_promedio ?? 0, 2) }}</h3>
-                    <p>Precio Prom. (USD/t)</p>
+                    <h3>Bs. {{ number_format($totales->precio_promedio ?? 0, 2) }}</h3>
+                    <p>Precio Prom. (Bs/t)</p>
                 </div>
                 <div class="icon"><i class="fas fa-tags"></i></div>
             </div>
@@ -176,7 +176,7 @@
                             <th>Ubicación</th>
                             <th class="text-center">Pedidos</th>
                             <th class="text-right">Toneladas</th>
-                            <th class="text-right">Total USD</th>
+                            <th class="text-right">Total Bs</th>
                             <th class="text-right">Precio Prom.</th>
                             <th class="text-center">vs Mercado</th>
                         </tr>
@@ -204,8 +204,8 @@
                                 </td>
                                 <td class="text-center">{{ number_format($row->num_pedidos) }}</td>
                                 <td class="text-right">{{ number_format($row->total_toneladas, 2) }}</td>
-                                <td class="text-right font-weight-bold">$ {{ number_format($row->total_ingresos, 2) }}</td>
-                                <td class="text-right">$ {{ number_format($row->precio_promedio, 2) }}</td>
+                                <td class="text-right font-weight-bold">Bs. {{ number_format($row->total_ingresos, 2) }}</td>
+                                <td class="text-right">Bs. {{ number_format($row->precio_promedio, 2) }}</td>
                                 <td class="text-center">
                                     @php $diff = $row->diferencia_precio ?? 0; @endphp
                                     @if($diff > 0)
@@ -255,9 +255,9 @@
                                     show: true,
                                     total: {
                                         show: true,
-                                        label: 'Total USD',
+                                        label: 'Total Bs',
                                         formatter: function(w) {
-                                            return '$ ' + w.globals.seriesTotals.reduce((a, b) => a + b, 0).toLocaleString('es', {minimumFractionDigits: 0});
+                                            return 'Bs. ' + w.globals.seriesTotals.reduce((a, b) => a + b, 0).toLocaleString('es', {minimumFractionDigits: 0});
                                         }
                                     }
                                 }
@@ -267,7 +267,7 @@
                     tooltip: {
                         y: {
                             formatter: function(val) {
-                                return '$ ' + val.toLocaleString('es', {minimumFractionDigits: 2});
+                                return 'Bs. ' + val.toLocaleString('es', {minimumFractionDigits: 2});
                             }
                         }
                     }
@@ -280,7 +280,7 @@
                 const topClientes = dataClientes.slice(0, 10);
                 const chartBarras = new ApexCharts(document.querySelector('#chart-top-clientes'), {
                     series: [{
-                        name: 'Ingresos USD',
+                        name: 'Ingresos Bs',
                         data: topClientes.map(c => parseFloat(c.total_ingresos))
                     }],
                     chart: { type: 'bar', height: 300, toolbar: { show: false } },
@@ -290,14 +290,14 @@
                     dataLabels: { 
                         enabled: true,
                         formatter: function(val) {
-                            return '$ ' + val.toLocaleString('es', {minimumFractionDigits: 0});
+                            return 'Bs. ' + val.toLocaleString('es', {minimumFractionDigits: 0});
                         }
                     },
                     xaxis: {
                         categories: topClientes.map(c => c.nombre.substring(0, 20)),
                         labels: {
                             formatter: function(val) {
-                                return '$ ' + val.toLocaleString('es', {minimumFractionDigits: 0});
+                                return 'Bs. ' + val.toLocaleString('es', {minimumFractionDigits: 0});
                             }
                         }
                     },
@@ -305,7 +305,7 @@
                     tooltip: {
                         y: {
                             formatter: function(val) {
-                                return '$ ' + val.toLocaleString('es', {minimumFractionDigits: 2});
+                                return 'Bs. ' + val.toLocaleString('es', {minimumFractionDigits: 2});
                             }
                         }
                     }

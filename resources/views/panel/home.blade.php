@@ -203,7 +203,8 @@
                         </div>
                         <div>
                             <span class="text-muted small">Ingresos</span>
-                            <h5 class="mb-0 text-success">Bs {{ number_format($ventas_mes_totales->total_usd ?? 0, 0) }}</h5>
+                            <h5 class="mb-0 text-success">Bs {{ number_format($ventas_mes_totales->total_usd ?? 0, 0) }}
+                            </h5>
                         </div>
                     </div>
                     {{-- Top clientes --}}
@@ -418,11 +419,6 @@
                         <div class="col-md-2 col-4 mb-3">
                             <a href="{{ route('cat.almacenes.index') }}" class="btn btn-app bg-warning">
                                 <i class="fas fa-warehouse"></i> Almacenes
-                            </a>
-                        </div>
-                        <div class="col-md-2 col-4 mb-3">
-                            <a href="{{ route('comercial.pedidos.index') }}" class="btn btn-app bg-danger">
-                                <i class="fas fa-shopping-cart"></i> Pedidos
                             </a>
                         </div>
                         <div class="col-md-2 col-4 mb-3">

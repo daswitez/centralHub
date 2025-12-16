@@ -45,7 +45,7 @@
         <aside class="main-sidebar sidebar-dark-primary elevation-4" aria-label="Barra lateral">
             {{-- Logo/brand --}}
             <a href="{{ url('/') }}" class="brand-link text-decoration-none">
-                <span class="brand-text font-weight-light">AdminLTE 3</span>
+                <span class="brand-text font-weight-light">Central Hub</span>
             </a>
             {{-- Contenido del sidebar --}}
             <div class="sidebar">
@@ -89,21 +89,6 @@
                                 <li class="nav-item"><a class="nav-link" href="{{ route('cat.almacenes.index') }}"><i
                                             class="fas fa-cogs mr-2"></i>
                                         <p>Gestión Almacenes</p>
-                                    </a></li>
-                                <li class="nav-item"><a class="nav-link"
-                                        href="{{ route('tx.almacen.despachar-al-almacen.form') }}"><i
-                                            class="fas fa-truck-loading mr-2"></i>
-                                        <p>Despachar a almacén</p>
-                                    </a></li>
-                                <li class="nav-item"><a class="nav-link"
-                                        href="{{ route('tx.almacen.recepcionar-envio.form') }}"><i
-                                            class="fas fa-inbox mr-2"></i>
-                                        <p>Recepcionar envío</p>
-                                    </a></li>
-                                <li class="nav-item"><a class="nav-link"
-                                        href="{{ route('tx.almacen.despachar-al-cliente.form') }}"><i
-                                            class="fas fa-shipping-fast mr-2"></i>
-                                        <p>Despachar a cliente</p>
                                     </a></li>
                             </ul>
                         </li>
@@ -171,7 +156,7 @@
                                 microservicio de Trazabilidad --}}
                             </ul>
                         </li>
-                        <li class="nav-item has-treeview">
+                        <!-- <li class="nav-item has-treeview">
                             <a href="#" class="nav-link">
                                 <i class="nav-icon fas fa-shopping-cart"></i>
                                 <p>Comercial <i class="right fas fa-angle-left"></i></p>
@@ -185,10 +170,10 @@
                                 {{-- Link a crear pedido removido - Los pedidos se crean desde el microservicio de
                                 Trazabilidad --}}
                             </ul>
-                        </li>
+                        </li> -->
 
                         {{-- Menú de Solicitudes --}}
-                        <li class="nav-item has-treeview">
+                        <!-- <li class="nav-item has-treeview">
                             <a href="#" class="nav-link">
                                 <i class="nav-icon fas fa-file-invoice"></i>
                                 <p>Solicitudes <i class="right fas fa-angle-left"></i></p>
@@ -207,7 +192,7 @@
                                     </a>
                                 </li>
                             </ul>
-                        </li>
+                        </li> -->
 
                         {{-- Estado de Lotes --}}
                         <li class="nav-item">

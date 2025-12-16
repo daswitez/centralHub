@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
             ProduccionSeeder::class,         // <--- Añade datos a los lotes creados arriba
             CertificacionesSeeder::class,    // <--- Añade certificados
             AlmacenTransaccionalSeeder::class, // <--- Añade inventario
+            DashboardSeeder::class,          // <--- Rellena gráficos e históricos (Dashboard)
             // TrazabilidadDemoSeeder::class, // <--- Redundante con TrazabilidadCompleta, causa duplicados
         ]);
     }
