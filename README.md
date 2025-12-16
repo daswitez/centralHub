@@ -1,17 +1,3 @@
-Perfecto. Aquí tienes un **README.md COMPLETO, UNIFICADO y LISTO PARA ENTREGA / REPO**, incorporando **TODO**:
-
-* Laravel + Docker + Nginx + PostgreSQL
-* Networks internas + Proxy (Nginx Proxy Manager)
-* Variables de entorno reales
-* APIs externas (Trazabilidad, OrgTrack)
-* Comandos reales de despliegue
-* Errores comunes
-* Buen nivel académico y profesional
-
-Puedes **copiar y pegar tal cual** 👇
-
----
-
 # 📘 CentralHub – Documentación Completa de Despliegue
 
 **Laravel + Docker + Nginx + PostgreSQL + Nginx Proxy Manager**
