@@ -63,12 +63,7 @@
                                 <p>Ventas</p>
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a href="{{ route('panel.logistica') }}" class="nav-link">
-                                <i class="nav-icon fas fa-truck"></i>
-                                <p>Logística</p>
-                            </a>
-                        </li>
+                        {{-- Logística panel removido del sidebar pero sigue accesible vía URL --}}
                         <li class="nav-item">
                             <a href="{{ route('panel.planta') }}" class="nav-link">
                                 <i class="nav-icon fas fa-industry"></i>
